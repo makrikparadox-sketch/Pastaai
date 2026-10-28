@@ -1,5 +1,4 @@
---// Xukeni Menu + ESP + Teleport + Key System
---// Ключ: ByXukeni
+--// Xukeni Menu + ESP + Teleport + Key System (Mobile Fixed)
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -7,14 +6,14 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
-local parent
-pcall(function() parent = gethui() end)
-parent = parent or Players.LocalPlayer:WaitForChild("PlayerGui")
+-- ФИКС: Всегда используем PlayerGui, чтобы Delta на телефоне видела меню
+local parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "XukeniMenu"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
+gui.DisplayOrder = 999
 gui.Parent = parent
 
 local function corner(o, r) local c = Instance.new("UICorner") c.CornerRadius = r c.Parent = o end
@@ -633,5 +632,4 @@ local function loadMainScript()
 	corner(refreshBtn, UDim.new(0, 10))
 	refreshBtn.MouseButton1Click:Connect(refreshPlayerList)
 
-	local listHolder = Instance.new("Frame")
-	listHolder.Size = U
+	local listHolder = Instanc
