@@ -1,4 +1,4 @@
--- Универсал | Часть 1 (HP Text)
+-- Универсал | Часть 1 (GUI + Key + ESP)
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -139,7 +139,7 @@ UIS.InputEnded:Connect(function(input)
 	end
 end)
 
--- ЛОГИКА КЛЮЧА
+-- КЛЮЧ
 keyBtn.MouseButton1Click:Connect(function()
 	if keyBox.Text == "ByXukeni" then
 		keyLabel.Text = "Правильно хуила!"
@@ -162,7 +162,7 @@ openBtn.MouseButton1Click:Connect(function()
 	menu.Visible = not menu.Visible
 end)
 
--- ================= VISUALS =================
+-- ================= VISUALS (ESP) =================
 local espActive = false
 local activeEspData = {}
 local espColor = Color3.fromRGB(110, 190, 255)
@@ -289,13 +289,11 @@ local function createESP(p)
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	if not head or not hum then return end
 	
-	-- Чамсы
 	local hl = Instance.new("Highlight", char)
 	hl.FillColor = espColor hl.OutlineColor = espColor hl.FillTransparency = 0.6
 	hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 	hl.Enabled = showChams
 	
-	-- Billboard с именем, дистанцией и ХП
 	local bb = Instance.new("BillboardGui", char)
 	bb.Adornee = head bb.Size = UDim2.new(0, 200, 0, 80) bb.StudsOffset = Vector3.new(0, 3, 0) bb.AlwaysOnTop = true
 	
@@ -311,7 +309,7 @@ local function createESP(p)
 	
 	local hpText = Instance.new("TextLabel", bb)
 	hpText.Size = UDim2.new(1, 0, 0, 16) hpText.Position = UDim2.new(0, 0, 0, 36) hpText.BackgroundTransparency = 1
-	hpText.TextColor3 = Color3.fromRGB(0, 255, 0) hpText.TextStrokeTransparency = 0 hpText.Font = Enum.Font.Gotham dist.TextSize = 12
+	hpText.TextColor3 = Color3.fromRGB(0, 255, 0) hpText.TextStrokeTransparency = 0 hpText.Font = Enum.Font.Gotham hpText.TextSize = 12
 	hpText.Text = "HP: 100"
 	hpText.Visible = showHealth
 	
@@ -355,8 +353,6 @@ RunService.RenderStepped:Connect(function()
 			if showHealth then
 				local hp = math.floor(hum.Health)
 				d.HealthLabel.Text = "HP: " .. hp
-				
-				-- Меняем цвет текста в зависимости от ХП
 				if hum.Health / hum.MaxHealth > 0.6 then
 					d.HealthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
 				elseif hum.Health / hum.MaxHealth > 0.3 then
@@ -368,7 +364,9 @@ RunService.RenderStepped:Connect(function()
 		end
 	end
 end)
--- ================= ЧАСТЬ 2 (Combat + Movement + Players + Touch Fling) =================
+
+print("Универсал: Часть 1 загружена.")
+-- Универсал | Часть 2 (Combat + Movement + Players + Touch Fling)
 local function addToggle(page, text, callback)
 	local btn = Instance.new("TextButton", page)
 	btn.Size = UDim2.new(1, 0, 0, 35)
@@ -426,7 +424,7 @@ local function addSlider(page, text, min, max, default, callback)
 	UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then sliding = false end end)
 end
 
--- 1. COMBAT
+-- COMBAT
 local combatLayout = Instance.new("UIListLayout", combatPage)
 combatLayout.Padding = UDim.new(0, 8)
 combatLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -437,7 +435,7 @@ cLbl.Text = "В разработке..."
 cLbl.TextColor3 = Color3.fromRGB(150, 150, 150)
 cLbl.Font = Enum.Font.GothamBold
 
--- 2. MOVEMENT
+-- MOVEMENT
 local moveLayout = Instance.new("UIListLayout", movementPage)
 moveLayout.Padding = UDim.new(0, 8)
 moveLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -453,32 +451,47 @@ addToggle(movementPage, "Fly", function(on)
 	if not hum or not root then return end
 	if flying then
 		hum.PlatformStand = true
-		local bv = Instance.new("BodyVelocity", root) bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+		local bv = Instance.new("BodyVelocity", root) bv.MaxForce = Vector3.new(9e9, 9e9, 9e9) bv.Velocity = Vector3.zero
 		local bg = Instance.new("BodyGyro", root) bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9) bg.P = 10000
-		local m = {f=0,b=0,l=0,r=0,up=0,dn=0}
-		UIS.InputBegan:Connect(function(i, g) if g then return end
-			if i.KeyCode == Enum.KeyCode.W then m.f=1 end if i.KeyCode == Enum.KeyCode.S then m.b=-1 end
-			if i.KeyCode == Enum.KeyCode.A then m.l=-1 end if i.KeyCode == Enum.KeyCode.D then m.r=1 end
-			if i.KeyCode == Enum.KeyCode.Space then m.up=1 end if i.KeyCode == Enum.KeyCode.LeftShift then m.dn=-1 end
+		local keys = {f=0,b=0,l=0,r=0,up=0,dn=0}
+		local b1 = UIS.InputBegan:Connect(function(i, g) if g then return end
+			if i.KeyCode == Enum.KeyCode.W then keys.f=1 end if i.KeyCode == Enum.KeyCode.S then keys.b=-1 end
+			if i.KeyCode == Enum.KeyCode.A then keys.l=-1 end if i.KeyCode == Enum.KeyCode.D then keys.r=1 end
+			if i.KeyCode == Enum.KeyCode.Space then keys.up=1 end if i.KeyCode == Enum.KeyCode.LeftShift then keys.dn=-1 end
 		end)
-		UIS.InputEnded:Connect(function(i)
-			if i.KeyCode == Enum.KeyCode.W then m.f=0 end if i.KeyCode == Enum.KeyCode.S then m.b=0 end
-			if i.KeyCode == Enum.KeyCode.A then m.l=0 end if i.KeyCode == Enum.KeyCode.D then m.r=0 end
-			if i.KeyCode == Enum.KeyCode.Space then m.up=0 end if i.KeyCode == Enum.KeyCode.LeftShift then m.dn=0 end
+		local b2 = UIS.InputEnded:Connect(function(i)
+			if i.KeyCode == Enum.KeyCode.W then keys.f=0 end if i.KeyCode == Enum.KeyCode.S then keys.b=0 end
+			if i.KeyCode == Enum.KeyCode.A then keys.l=0 end if i.KeyCode == Enum.KeyCode.D then keys.r=0 end
+			if i.KeyCode == Enum.KeyCode.Space then keys.up=0 end if i.KeyCode == Enum.KeyCode.LeftShift then keys.dn=0 end
 		end)
 		task.spawn(function()
 			while flying and char.Parent do
 				RunService.RenderStepped:Wait()
 				local cam = workspace.CurrentCamera.CFrame
 				bg.CFrame = CFrame.new(root.Position, root.Position + cam.LookVector)
-				local dir = (cam.LookVector * (m.f + m.b)) + (cam.RightVector * (m.l + m.r)) + Vector3.new(0, m.up + m.dn, 0)
-				if dir.Magnitude > 0 then bv.Velocity = dir.Unit * flySpeed else bv.Velocity = Vector3.zero end
+				local moveDir = hum.MoveDirection
+				local finalDir = Vector3.zero
+				if moveDir.Magnitude > 0 then
+					local forward = cam.LookVector * (moveDir.Z * -1)
+					local right = cam.RightVector * moveDir.X
+					finalDir = (forward + right).Unit * flySpeed
+				else
+					local forward = cam.LookVector * keys.f
+					local backward = cam.LookVector * keys.b
+					local left = cam.RightVector * keys.l
+					local right = cam.RightVector * keys.r
+					local up = Vector3.new(0, 1, 0) * keys.up
+					local down = Vector3.new(0, 1, 0) * keys.dn
+					local manualDir = forward + backward + left + right + up + down
+					if manualDir.Magnitude > 0 then finalDir = manualDir.Unit * flySpeed end
+				end
+				bv.Velocity = finalDir
 			end
 		end)
 	else
 		hum.PlatformStand = false
-		if root:FindFirstChildOfClass("BodyVelocity") then root:FindFirstChildOfClass("BodyVelocity"):Destroy() end
-		if root:FindFirstChildOfClass("BodyGyro") then root:FindFirstChildOfClass("BodyGyro"):Destroy() end
+		local bv = root:FindFirstChildOfClass("BodyVelocity") if bv then bv:Destroy() end
+		local bg = root:FindFirstChildOfClass("BodyGyro") if bg then bg:Destroy() end
 	end
 end)
 addSlider(movementPage, "Скорость полёта", 10, 200, 50, function(v) flySpeed = v end)
@@ -513,7 +526,7 @@ addSlider(movementPage, "Сила прыжка", 50, 200, 50, function(v)
 	end
 end)
 
--- 3. PLAYERS (ТЕЛЕПОРТ + TOUCH FLING)
+-- PLAYERS
 local playersLayout = Instance.new("UIListLayout", playersPage)
 playersLayout.Padding = UDim.new(0, 5)
 playersLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -569,14 +582,12 @@ addToggle(playersPage, "Touch Fling", function(on)
 	if not char then return end
 	local root = char:FindFirstChild("HumanoidRootPart")
 	if not root then return end
-	
 	if flingActive then
 		local spin = Instance.new("AngularVelocity", root)
 		spin.Name = "FlingSpin"
 		spin.AngularVelocity = Vector3.new(0, 99999, 0)
 		spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
 		spin.P = math.huge
-		
 		flingConn = root.Touched:Connect(function(hit)
 			if not flingActive then return end
 			local hitChar = hit.Parent
@@ -595,7 +606,6 @@ addToggle(playersPage, "Touch Fling", function(on)
 	end
 end)
 
--- Респавн для флинга
 LP.CharacterAdded:Connect(function()
 	if flingActive then task.wait(1) 
 		local char = LP.Character
@@ -608,4 +618,4 @@ LP.CharacterAdded:Connect(function()
 	end
 end)
 
-print("Универсал: Часть 2 загружена. Touch Fling в Players.")
+print("Универсал: Часть 2 загружена. Всё готово.")
