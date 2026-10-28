@@ -577,3 +577,60 @@ tpBtn.Activated:Connect(function()
 end)
 
 print("Универсал: Скрипт полностью загружен!")
+-- Новый красивый круг FOV (добавляется отдельно)
+task.spawn(function()
+    local pg = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+    local oldGui = pg:FindFirstChild("FovGui")
+    if oldGui then oldGui:Destroy() end -- Удаляем старый, чтобы не мешал
+
+    local fovGui = Instance.new("ScreenGui")
+    fovGui.Name = "FovGui"
+    fovGui.ResetOnSpawn = false
+    fovGui.IgnoreGuiInset = true
+    fovGui.Parent = pg
+
+    -- Круг
+    local circle = Instance.new("Frame", fovGui)
+    circle.Size = UDim2.fromOffset(100, 100)
+    circle.Position = UDim2.fromScale(0.5, 0.5)
+    circle.AnchorPoint = Vector2.new(0.5, 0.5)
+    circle.BackgroundTransparency = 1
+    circle.BorderSizePixel = 0
+    circle.Visible = false
+
+    local corner = Instance.new("UICorner", circle)
+    corner.CornerRadius = UDim.new(1, 0)
+
+    local stroke = Instance.new("UIStroke", circle)
+    stroke.Color = Color3.fromRGB(110, 190, 255)
+    stroke.Thickness = 2
+    stroke.Transparency = 0.2
+
+    -- Привязка к Aimbot (ищем кнопку на экране)
+    task.spawn(function()
+        while task.wait(0.5) do
+            local found = false
+            for _, v in pairs(pg:GetDescendants()) do
+                if v:IsA("TextButton") and v.Text == "Aimbot: ON" then
+                    found = true
+                    break
+                end
+            end
+            
+            if found then
+                circle.Visible = true
+                -- Обновляем размер в реальном времени
+                local aimbotFov = 100 -- Значение по умолчанию (если ползунок не двигали)
+                for _, v in pairs(pg:GetDescendants()) do
+                    if v:IsA("TextLabel") and string.find(v.Text, "Aimbot FOV:") then
+                        local num = tonumber(string.match(v.Text, "%d+"))
+                        if num then aimbotFov = num end
+                    end
+                end
+                circle.Size = UDim2.fromOffset(aimbotFov * 2, aimbotFov * 2)
+            else
+                circle.Visible = false
+            end
+        end
+    end)
+end)
