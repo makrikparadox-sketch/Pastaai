@@ -1,4 +1,4 @@
--- Xukeni Tabbed Menu (Fixed Fly Movement)
+-- Универсал | Часть 1 (HP Text)
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -6,9 +6,14 @@ local LP = Players.LocalPlayer
 local PG = LP:WaitForChild("PlayerGui")
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "Xukeni"
+gui.Name = "Universal"
 gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
 gui.Parent = PG
+
+local function corner(o, r) local c = Instance.new("UICorner") c.CornerRadius = r c.Parent = o end
+local ACCENT = Color3.fromRGB(110, 190, 255)
+local OFF = Color3.fromRGB(70, 85, 120)
 
 -- ОКНО КЛЮЧА
 local keyFrame = Instance.new("Frame", gui)
@@ -16,7 +21,8 @@ keyFrame.Size = UDim2.fromOffset(250, 170)
 keyFrame.Position = UDim2.fromScale(0.5, 0.5)
 keyFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 keyFrame.BackgroundColor3 = Color3.fromRGB(20, 30, 50)
-Instance.new("UICorner", keyFrame).CornerRadius = UDim.new(0, 10)
+keyFrame.BorderSizePixel = 0
+corner(keyFrame, UDim.new(0, 10))
 
 local keyLabel = Instance.new("TextLabel", keyFrame)
 keyLabel.Size = UDim2.new(1, -20, 0, 30)
@@ -33,30 +39,34 @@ keyBox.Position = UDim2.fromOffset(10, 50)
 keyBox.BackgroundColor3 = Color3.fromRGB(10, 15, 25)
 keyBox.TextColor3 = Color3.new(1, 1, 1)
 keyBox.PlaceholderText = "Сюда пиши"
-Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0, 6)
+keyBox.Font = Enum.Font.GothamMedium
+keyBox.TextSize = 14
+corner(keyBox, UDim.new(0, 6))
 
 local keyBtn = Instance.new("TextButton", keyFrame)
 keyBtn.Size = UDim2.new(1, -20, 0, 40)
 keyBtn.Position = UDim2.fromOffset(10, 110)
-keyBtn.BackgroundColor3 = Color3.fromRGB(110, 190, 255)
+keyBtn.BackgroundColor3 = ACCENT
 keyBtn.Text = "Войти"
 keyBtn.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0, 6)
+keyBtn.Font = Enum.Font.GothamBold
+corner(keyBtn, UDim.new(0, 6))
 
 -- МЕНЮ
 local menu = Instance.new("Frame", gui)
-menu.Size = UDim2.fromOffset(400, 320)
+menu.Size = UDim2.fromOffset(400, 380)
 menu.Position = UDim2.fromScale(0.5, 0.5)
 menu.AnchorPoint = Vector2.new(0.5, 0.5)
 menu.BackgroundColor3 = Color3.fromRGB(20, 30, 50)
+menu.BorderSizePixel = 0
 menu.Visible = false
-Instance.new("UICorner", menu).CornerRadius = UDim.new(0, 10)
+corner(menu, UDim.new(0, 10))
 
 -- ВКЛАДКИ
 local tabBar = Instance.new("Frame", menu)
 tabBar.Size = UDim2.new(1, 0, 0, 40)
 tabBar.BackgroundColor3 = Color3.fromRGB(15, 25, 40)
-Instance.new("UICorner", tabBar).CornerRadius = UDim.new(0, 10)
+corner(tabBar, UDim.new(0, 10))
 local tabLayout = Instance.new("UIListLayout", tabBar)
 tabLayout.FillDirection = Enum.FillDirection.Horizontal
 tabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -66,13 +76,13 @@ tabLayout.Padding = UDim.new(0, 5)
 local pages = {}
 local function createPage(name)
 	local btn = Instance.new("TextButton", tabBar)
-	btn.Size = UDim2.new(0.3, 0, 0, 30)
-	btn.BackgroundColor3 = Color3.fromRGB(110, 190, 255)
+	btn.Size = UDim2.new(0.22, 0, 0, 30)
+	btn.BackgroundColor3 = OFF
 	btn.Text = name
 	btn.TextColor3 = Color3.new(1, 1, 1)
 	btn.Font = Enum.Font.GothamBold
 	btn.TextSize = 12
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+	corner(btn, UDim.new(0, 6))
 	
 	local page = Instance.new("Frame", menu)
 	page.Size = UDim2.new(1, -20, 1, -60)
@@ -84,34 +94,63 @@ local function createPage(name)
 	btn.MouseButton1Click:Connect(function()
 		for n, p in pairs(pages) do
 			p.Page.Visible = (n == name)
-			p.Button.BackgroundColor3 = (n == name) and Color3.fromRGB(110, 190, 255) or Color3.fromRGB(30, 45, 70)
+			p.Button.BackgroundColor3 = (n == name) and ACCENT or OFF
 		end
 	end)
 	return page
 end
 
 local visualsPage = createPage("Visuals")
-local playersPage = createPage("Players")
+local combatPage = createPage("Combat")
 local movementPage = createPage("Movement")
+local playersPage = createPage("Players")
 
--- КНОПКА
+-- КНОПКА XUKENI
 local openBtn = Instance.new("TextButton", gui)
-openBtn.Size = UDim2.fromOffset(60, 60)
+openBtn.Size = UDim2.fromOffset(80, 60)
 openBtn.Position = UDim2.new(0, 20, 0.5, -30)
-openBtn.BackgroundColor3 = Color3.fromRGB(110, 190, 255)
-openBtn.Text = "X"
+openBtn.BackgroundColor3 = ACCENT
+openBtn.BackgroundTransparency = 0.5
+openBtn.Text = "Xukeni"
 openBtn.TextColor3 = Color3.new(1, 1, 1)
-openBtn.Font = Enum.Font.GothamBold
-openBtn.TextSize = 24
+openBtn.Font = Enum.Font.GothamBlack
+openBtn.TextSize = 14
 openBtn.Visible = false
-Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1, 0)
+corner(openBtn, UDim.new(0, 10))
 
+local draggingBtn = false
+local dragStart, startPos
+openBtn.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingBtn = true
+		dragStart = input.Position
+		startPos = openBtn.Position
+	end
+end)
+UIS.InputChanged:Connect(function(input)
+	if draggingBtn and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - dragStart
+		openBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingBtn = false
+	end
+end)
+
+-- ЛОГИКА КЛЮЧА
 keyBtn.MouseButton1Click:Connect(function()
 	if keyBox.Text == "ByXukeni" then
+		keyLabel.Text = "Правильно хуила!"
+		keyLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+		keyBox.Visible = false
+		keyBtn.Visible = false
+		task.wait(0.5)
 		keyFrame:Destroy()
 		openBtn.Visible = true
 		pages.Visuals.Page.Visible = true
-		pages.Visuals.Button.BackgroundColor3 = Color3.fromRGB(110, 190, 255)
+		pages.Visuals.Button.BackgroundColor3 = ACCENT
 	else
 		keyBox.Text = ""
 		keyLabel.Text = "Неверный ключ хуила!"
@@ -127,62 +166,361 @@ end)
 local espActive = false
 local activeEspData = {}
 local espColor = Color3.fromRGB(110, 190, 255)
+local showChams = true
+local showName = true
+local showHealth = true
+local showDist = true
 
 local espBtn = Instance.new("TextButton", visualsPage)
-espBtn.Size = UDim2.new(1, 0, 0, 40)
-espBtn.BackgroundColor3 = Color3.fromRGB(30, 45, 70)
+espBtn.Size = UDim2.new(1, 0, 0, 35)
+espBtn.BackgroundColor3 = OFF
 espBtn.Text = "ESP: OFF"
 espBtn.TextColor3 = Color3.new(1, 1, 1)
+espBtn.Font = Enum.Font.GothamBold
 espBtn.Position = UDim2.fromOffset(0, 0)
-Instance.new("UICorner", espBtn).CornerRadius = UDim.new(0, 6)
+corner(espBtn, UDim.new(0, 6))
+
+local colorBtn = Instance.new("TextButton", visualsPage)
+colorBtn.Size = UDim2.new(1, 0, 0, 35)
+colorBtn.BackgroundColor3 = OFF
+colorBtn.Text = "Цвет: Синий"
+colorBtn.TextColor3 = Color3.new(1, 1, 1)
+colorBtn.Font = Enum.Font.GothamBold
+colorBtn.Position = UDim2.fromOffset(0, 40)
+colorBtn.Visible = false
+corner(colorBtn, UDim.new(0, 6))
+
+local colors = {
+	{Name = "Синий", Color = Color3.fromRGB(110, 190, 255)},
+	{Name = "Белый", Color = Color3.fromRGB(255, 255, 255)},
+	{Name = "Красный", Color = Color3.fromRGB(255, 0, 0)},
+	{Name = "Зеленый", Color = Color3.fromRGB(0, 255, 0)}
+}
+local colorIndex = 1
+
+colorBtn.MouseButton1Click:Connect(function()
+	colorIndex = colorIndex + 1
+	if colorIndex > #colors then colorIndex = 1 end
+	local c = colors[colorIndex]
+	espColor = c.Color
+	colorBtn.Text = "Цвет: " .. c.Name
+	for p, data in pairs(activeEspData) do
+		if data.Highlight then data.Highlight.FillColor = espColor data.Highlight.OutlineColor = espColor end
+		if data.NameLabel then data.NameLabel.TextColor3 = espColor end
+	end
+end)
+
+local chamsBtn = Instance.new("TextButton", visualsPage)
+chamsBtn.Size = UDim2.new(1, 0, 0, 35)
+chamsBtn.BackgroundColor3 = OFF
+chamsBtn.Text = "CHAMS: ON"
+chamsBtn.TextColor3 = Color3.new(1, 1, 1)
+chamsBtn.Font = Enum.Font.GothamBold
+chamsBtn.Position = UDim2.fromOffset(0, 80)
+chamsBtn.Visible = false
+corner(chamsBtn, UDim.new(0, 6))
+
+local nameBtn = Instance.new("TextButton", visualsPage)
+nameBtn.Size = UDim2.new(1, 0, 0, 35)
+nameBtn.BackgroundColor3 = OFF
+nameBtn.Text = "NAME: ON"
+nameBtn.TextColor3 = Color3.new(1, 1, 1)
+nameBtn.Font = Enum.Font.GothamBold
+nameBtn.Position = UDim2.fromOffset(0, 120)
+nameBtn.Visible = false
+corner(nameBtn, UDim.new(0, 6))
+
+local healthBtn = Instance.new("TextButton", visualsPage)
+healthBtn.Size = UDim2.new(1, 0, 0, 35)
+healthBtn.BackgroundColor3 = OFF
+healthBtn.Text = "HEALTH: ON"
+healthBtn.TextColor3 = Color3.new(1, 1, 1)
+healthBtn.Font = Enum.Font.GothamBold
+healthBtn.Position = UDim2.fromOffset(0, 160)
+healthBtn.Visible = false
+corner(healthBtn, UDim.new(0, 6))
+
+local distBtn = Instance.new("TextButton", visualsPage)
+distBtn.Size = UDim2.new(1, 0, 0, 35)
+distBtn.BackgroundColor3 = OFF
+distBtn.Text = "DIST: ON"
+distBtn.TextColor3 = Color3.new(1, 1, 1)
+distBtn.Font = Enum.Font.GothamBold
+distBtn.Position = UDim2.fromOffset(0, 200)
+distBtn.Visible = false
+corner(distBtn, UDim.new(0, 6))
+
+chamsBtn.MouseButton1Click:Connect(function()
+	showChams = not showChams
+	chamsBtn.Text = showChams and "CHAMS: ON" or "CHAMS: OFF"
+	for p, d in pairs(activeEspData) do
+		if d.Highlight then d.Highlight.Enabled = showChams end
+	end
+end)
+
+nameBtn.MouseButton1Click:Connect(function()
+	showName = not showName
+	nameBtn.Text = showName and "NAME: ON" or "NAME: OFF"
+	for p, d in pairs(activeEspData) do
+		if d.NameLabel then d.NameLabel.Visible = showName end
+	end
+end)
+
+healthBtn.MouseButton1Click:Connect(function()
+	showHealth = not showHealth
+	healthBtn.Text = showHealth and "HEALTH: ON" or "HEALTH: OFF"
+	for p, d in pairs(activeEspData) do
+		if d.HealthLabel then d.HealthLabel.Visible = showHealth end
+	end
+end)
+
+distBtn.MouseButton1Click:Connect(function()
+	showDist = not showDist
+	distBtn.Text = showDist and "DIST: ON" or "DIST: OFF"
+	for p, d in pairs(activeEspData) do
+		if d.DistLabel then d.DistLabel.Visible = showDist end
+	end
+end)
 
 local function createESP(p)
 	if p == LP or not p.Character then return end
 	local char = p.Character
 	local head = char:FindFirstChild("Head")
-	if not head then return end
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not head or not hum then return end
+	
+	-- Чамсы
 	local hl = Instance.new("Highlight", char)
 	hl.FillColor = espColor hl.OutlineColor = espColor hl.FillTransparency = 0.6
 	hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	hl.Enabled = showChams
+	
+	-- Billboard с именем, дистанцией и ХП
 	local bb = Instance.new("BillboardGui", char)
-	bb.Adornee = head bb.Size = UDim2.new(0, 200, 0, 50) bb.StudsOffset = Vector3.new(0, 3, 0) bb.AlwaysOnTop = true
+	bb.Adornee = head bb.Size = UDim2.new(0, 200, 0, 80) bb.StudsOffset = Vector3.new(0, 3, 0) bb.AlwaysOnTop = true
+	
 	local name = Instance.new("TextLabel", bb)
 	name.Size = UDim2.new(1, 0, 0, 20) name.BackgroundTransparency = 1 name.Text = p.Name name.TextColor3 = espColor
 	name.TextStrokeTransparency = 0 name.Font = Enum.Font.GothamBold name.TextSize = 14
+	name.Visible = showName
+	
 	local dist = Instance.new("TextLabel", bb)
 	dist.Size = UDim2.new(1, 0, 0, 16) dist.Position = UDim2.new(0, 0, 0, 20) dist.BackgroundTransparency = 1
 	dist.TextColor3 = Color3.new(1, 1, 1) dist.TextStrokeTransparency = 0 dist.Font = Enum.Font.Gotham dist.TextSize = 12
-	activeEspData[p] = {Highlight = hl, Billboard = bb, NameLabel = name, DistLabel = dist, Char = char}
+	dist.Visible = showDist
+	
+	local hpText = Instance.new("TextLabel", bb)
+	hpText.Size = UDim2.new(1, 0, 0, 16) hpText.Position = UDim2.new(0, 0, 0, 36) hpText.BackgroundTransparency = 1
+	hpText.TextColor3 = Color3.fromRGB(0, 255, 0) hpText.TextStrokeTransparency = 0 hpText.Font = Enum.Font.Gotham dist.TextSize = 12
+	hpText.Text = "HP: 100"
+	hpText.Visible = showHealth
+	
+	activeEspData[p] = {Highlight = hl, Billboard = bb, NameLabel = name, DistLabel = dist, HealthLabel = hpText, Char = char}
+end
+
+local function removeESP(p)
+	local d = activeEspData[p]
+	if d then
+		if d.Highlight then d.Highlight:Destroy() end
+		if d.Billboard then d.Billboard:Destroy() end
+		activeEspData[p] = nil
+	end
 end
 
 espBtn.MouseButton1Click:Connect(function()
 	espActive = not espActive
 	espBtn.Text = espActive and "ESP: ON" or "ESP: OFF"
+	colorBtn.Visible = espActive
+	chamsBtn.Visible = espActive
+	nameBtn.Visible = espActive
+	healthBtn.Visible = espActive
+	distBtn.Visible = espActive
+	
 	if espActive then
 		for _, p in ipairs(Players:GetPlayers()) do createESP(p) end
 	else
-		for p, d in pairs(activeEspData) do
-			if d.Highlight then d.Highlight:Destroy() end
-			if d.Billboard then d.Billboard:Destroy() end
-		end
-		activeEspData = {}
+		for p, _ in pairs(activeEspData) do removeESP(p) end
 	end
 end)
 
 RunService.RenderStepped:Connect(function()
 	if not espActive then return end
 	for p, d in pairs(activeEspData) do
-		if d.Char and d.Char:FindFirstChild("HumanoidRootPart") then
-			local dist = (d.Char.HumanoidRootPart.Position - workspace.CurrentCamera.CFrame.Position).Magnitude
+		if d.Char and d.Char:FindFirstChild("HumanoidRootPart") and d.Char:FindFirstChildOfClass("Humanoid") then
+			local root = d.Char.HumanoidRootPart
+			local hum = d.Char:FindFirstChildOfClass("Humanoid")
+			local dist = (root.Position - workspace.CurrentCamera.CFrame.Position).Magnitude
 			d.DistLabel.Text = string.format("[%d]", math.floor(dist))
+			
+			if showHealth then
+				local hp = math.floor(hum.Health)
+				d.HealthLabel.Text = "HP: " .. hp
+				
+				-- Меняем цвет текста в зависимости от ХП
+				if hum.Health / hum.MaxHealth > 0.6 then
+					d.HealthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+				elseif hum.Health / hum.MaxHealth > 0.3 then
+					d.HealthLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+				else
+					d.HealthLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+				end
+			end
 		end
 	end
 end)
+-- ================= ЧАСТЬ 2 (Combat + Movement + Players + Touch Fling) =================
+local function addToggle(page, text, callback)
+	local btn = Instance.new("TextButton", page)
+	btn.Size = UDim2.new(1, 0, 0, 35)
+	btn.BackgroundColor3 = Color3.fromRGB(30, 45, 70)
+	btn.Text = text .. ": OFF"
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Font = Enum.Font.GothamBold
+	corner(btn, UDim.new(0, 6))
+	local state = false
+	btn.MouseButton1Click:Connect(function()
+		state = not state
+		btn.Text = text .. (state and ": ON" or ": OFF")
+		if callback then task.spawn(callback, state) end
+	end)
+end
 
--- ================= PLAYERS =================
+local function addSlider(page, text, min, max, default, callback)
+	local row = Instance.new("Frame", page)
+	row.Size = UDim2.new(1, 0, 0, 45)
+	row.BackgroundColor3 = Color3.fromRGB(30, 45, 70)
+	corner(row, UDim.new(0, 6))
+	local lbl = Instance.new("TextLabel", row)
+	lbl.Size = UDim2.new(1, -20, 0, 20)
+	lbl.Position = UDim2.fromOffset(10, 2)
+	lbl.BackgroundTransparency = 1
+	lbl.Text = text .. ": " .. default
+	lbl.TextColor3 = Color3.new(1, 1, 1)
+	lbl.Font = Enum.Font.GothamBold
+	lbl.TextSize = 12
+	lbl.TextXAlignment = Enum.TextXAlignment.Left
+	local track = Instance.new("Frame", row)
+	track.Size = UDim2.new(1, -20, 0, 6)
+	track.Position = UDim2.fromOffset(10, 28)
+	track.BackgroundColor3 = Color3.fromRGB(70, 85, 120)
+	corner(track, UDim.new(1, 0))
+	local fill = Instance.new("Frame", track)
+	fill.Size = UDim2.new((default-min)/(max-min), 0, 1, 0)
+	fill.BackgroundColor3 = ACCENT
+	corner(fill, UDim.new(1, 0))
+	local hit = Instance.new("TextButton", row)
+	hit.Size = UDim2.new(1, 0, 0, 20)
+	hit.Position = UDim2.fromOffset(0, 20)
+	hit.BackgroundTransparency = 1
+	hit.Text = ""
+	local sliding = false
+	local function update(i)
+		local rel = math.clamp((i.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+		local val = math.floor(min + rel * (max - min))
+		fill.Size = UDim2.new(rel, 0, 1, 0)
+		lbl.Text = text .. ": " .. val
+		if callback then task.spawn(callback, val) end
+	end
+	hit.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then sliding = true update(i) end end)
+	UIS.InputChanged:Connect(function(i) if sliding and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then update(i) end end)
+	UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then sliding = false end end)
+end
+
+-- 1. COMBAT
+local combatLayout = Instance.new("UIListLayout", combatPage)
+combatLayout.Padding = UDim.new(0, 8)
+combatLayout.SortOrder = Enum.SortOrder.LayoutOrder
+local cLbl = Instance.new("TextLabel", combatPage)
+cLbl.Size = UDim2.new(1, 0, 0, 40)
+cLbl.BackgroundTransparency = 1
+cLbl.Text = "В разработке..."
+cLbl.TextColor3 = Color3.fromRGB(150, 150, 150)
+cLbl.Font = Enum.Font.GothamBold
+
+-- 2. MOVEMENT
+local moveLayout = Instance.new("UIListLayout", movementPage)
+moveLayout.Padding = UDim.new(0, 8)
+moveLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local flying = false
+local flySpeed = 50
+addToggle(movementPage, "Fly", function(on)
+	flying = on
+	local char = LP.Character
+	if not char then return end
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not hum or not root then return end
+	if flying then
+		hum.PlatformStand = true
+		local bv = Instance.new("BodyVelocity", root) bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+		local bg = Instance.new("BodyGyro", root) bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9) bg.P = 10000
+		local m = {f=0,b=0,l=0,r=0,up=0,dn=0}
+		UIS.InputBegan:Connect(function(i, g) if g then return end
+			if i.KeyCode == Enum.KeyCode.W then m.f=1 end if i.KeyCode == Enum.KeyCode.S then m.b=-1 end
+			if i.KeyCode == Enum.KeyCode.A then m.l=-1 end if i.KeyCode == Enum.KeyCode.D then m.r=1 end
+			if i.KeyCode == Enum.KeyCode.Space then m.up=1 end if i.KeyCode == Enum.KeyCode.LeftShift then m.dn=-1 end
+		end)
+		UIS.InputEnded:Connect(function(i)
+			if i.KeyCode == Enum.KeyCode.W then m.f=0 end if i.KeyCode == Enum.KeyCode.S then m.b=0 end
+			if i.KeyCode == Enum.KeyCode.A then m.l=0 end if i.KeyCode == Enum.KeyCode.D then m.r=0 end
+			if i.KeyCode == Enum.KeyCode.Space then m.up=0 end if i.KeyCode == Enum.KeyCode.LeftShift then m.dn=0 end
+		end)
+		task.spawn(function()
+			while flying and char.Parent do
+				RunService.RenderStepped:Wait()
+				local cam = workspace.CurrentCamera.CFrame
+				bg.CFrame = CFrame.new(root.Position, root.Position + cam.LookVector)
+				local dir = (cam.LookVector * (m.f + m.b)) + (cam.RightVector * (m.l + m.r)) + Vector3.new(0, m.up + m.dn, 0)
+				if dir.Magnitude > 0 then bv.Velocity = dir.Unit * flySpeed else bv.Velocity = Vector3.zero end
+			end
+		end)
+	else
+		hum.PlatformStand = false
+		if root:FindFirstChildOfClass("BodyVelocity") then root:FindFirstChildOfClass("BodyVelocity"):Destroy() end
+		if root:FindFirstChildOfClass("BodyGyro") then root:FindFirstChildOfClass("BodyGyro"):Destroy() end
+	end
+end)
+addSlider(movementPage, "Скорость полёта", 10, 200, 50, function(v) flySpeed = v end)
+
+local speedActive = false
+local walkSpeedVal = 16
+addToggle(movementPage, "Walkspeed", function(on)
+	speedActive = on
+	if LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
+		LP.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = on and walkSpeedVal or 16
+	end
+end)
+addSlider(movementPage, "Скорость ходьбы", 16, 200, 16, function(v)
+	walkSpeedVal = v
+	if speedActive and LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
+		LP.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = v
+	end
+end)
+
+local jumpActive = false
+local jumpPowerVal = 50
+addToggle(movementPage, "JumpPower", function(on)
+	jumpActive = on
+	if LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
+		LP.Character:FindFirstChildOfClass("Humanoid").JumpPower = on and jumpPowerVal or 50
+	end
+end)
+addSlider(movementPage, "Сила прыжка", 50, 200, 50, function(v)
+	jumpPowerVal = v
+	if jumpActive and LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
+		LP.Character:FindFirstChildOfClass("Humanoid").JumpPower = v
+	end
+end)
+
+-- 3. PLAYERS (ТЕЛЕПОРТ + TOUCH FLING)
+local playersLayout = Instance.new("UIListLayout", playersPage)
+playersLayout.Padding = UDim.new(0, 5)
+playersLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
 local selectedPlayer = nil
 local playerList = Instance.new("ScrollingFrame", playersPage)
-playerList.Size = UDim2.new(1, 0, 0, 150)
+playerList.Size = UDim2.new(1, 0, 0, 120)
 playerList.BackgroundTransparency = 1
 playerList.ScrollBarThickness = 3
 playerList.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -190,170 +528,84 @@ local listLayout = Instance.new("UIListLayout", playerList)
 listLayout.Padding = UDim.new(0, 5)
 
 local function refreshList()
-	for _, v in ipairs(playerList:GetChildren()) do
-		if v:IsA("TextButton") then v:Destroy() end
-	end
+	for _, v in ipairs(playerList:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
 	for _, p in ipairs(Players:GetPlayers()) do
 		if p ~= LP then
 			local btn = Instance.new("TextButton", playerList)
-			btn.Size = UDim2.new(1, 0, 0, 35)
-			btn.BackgroundColor3 = (p == selectedPlayer) and Color3.fromRGB(110, 190, 255) or Color3.fromRGB(30, 45, 70)
+			btn.Size = UDim2.new(1, 0, 0, 30)
+			btn.BackgroundColor3 = (p == selectedPlayer) and ACCENT or Color3.fromRGB(30, 45, 70)
 			btn.Text = p.Name
 			btn.TextColor3 = Color3.new(1, 1, 1)
 			btn.Font = Enum.Font.GothamBold
-			Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-			btn.MouseButton1Click:Connect(function()
-				selectedPlayer = p
-				refreshList()
-			end)
+			corner(btn, UDim.new(0, 6))
+			btn.MouseButton1Click:Connect(function() selectedPlayer = p refreshList() end)
 		end
 	end
 end
-
-local tpBtn = Instance.new("TextButton", playersPage)
-tpBtn.Size = UDim2.new(1, 0, 0, 40)
-tpBtn.Position = UDim2.fromOffset(0, 160)
-tpBtn.BackgroundColor3 = Color3.fromRGB(110, 190, 255)
-tpBtn.Text = "Телепорт к выбранному"
-tpBtn.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", tpBtn).CornerRadius = UDim.new(0, 6)
-tpBtn.MouseButton1Click:Connect(function()
-	if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-		local myRoot = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
-		if myRoot then
-			myRoot.CFrame = selectedPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
-		end
-	end
-end)
-
 task.spawn(function() task.wait(1) refreshList() end)
 Players.PlayerAdded:Connect(function() task.wait(1) refreshList() end)
 Players.PlayerRemoving:Connect(function() task.wait(1) refreshList() end)
 
--- ================= MOVEMENT (FLY FIX) =================
-local flying = false
-local flySpeed = 50
+local tpBtn = Instance.new("TextButton", playersPage)
+tpBtn.Size = UDim2.new(1, 0, 0, 35)
+tpBtn.BackgroundColor3 = ACCENT
+tpBtn.Text = "Телепорт к выбранному"
+tpBtn.TextColor3 = Color3.new(1, 1, 1)
+tpBtn.Font = Enum.Font.GothamBold
+corner(tpBtn, UDim.new(0, 6))
+tpBtn.MouseButton1Click:Connect(function()
+	if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+		local myRoot = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+		if myRoot then myRoot.CFrame = selectedPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3) end
+	end
+end)
 
-local flyBtn = Instance.new("TextButton", movementPage)
-flyBtn.Size = UDim2.new(1, 0, 0, 40)
-flyBtn.BackgroundColor3 = Color3.fromRGB(30, 45, 70)
-flyBtn.Text = "Fly: OFF"
-flyBtn.TextColor3 = Color3.new(1, 1, 1)
-flyBtn.Position = UDim2.fromOffset(0, 0)
-Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0, 6)
-
-local speedLabel = Instance.new("TextLabel", movementPage)
-speedLabel.Size = UDim2.new(1, 0, 0, 20)
-speedLabel.Position = UDim2.fromOffset(0, 50)
-speedLabel.BackgroundTransparency = 1
-speedLabel.Text = "Скорость: 50"
-speedLabel.TextColor3 = Color3.new(1, 1, 1)
-
-local speedSlider = Instance.new("TextButton", movementPage)
-speedSlider.Size = UDim2.new(1, 0, 0, 20)
-speedSlider.BackgroundColor3 = Color3.fromRGB(30, 45, 70)
-speedSlider.Text = ""
-speedSlider.Position = UDim2.fromOffset(0, 80)
-Instance.new("UICorner", speedSlider).CornerRadius = UDim.new(1, 0)
-
-local sliderFill = Instance.new("Frame", speedSlider)
-sliderFill.Size = UDim2.new(0.2, 0, 1, 0)
-sliderFill.BackgroundColor3 = Color3.fromRGB(110, 190, 255)
-Instance.new("UICorner", sliderFill).CornerRadius = UDim.new(1, 0)
-
-local sliding = false
-local function updateSlider(input)
-	local rel = math.clamp((input.Position.X - speedSlider.AbsolutePosition.X) / speedSlider.AbsoluteSize.X, 0, 1)
-	flySpeed = math.floor(10 + rel * 190)
-	sliderFill.Size = UDim2.new(rel, 0, 1, 0)
-	speedLabel.Text = "Скорость: " .. flySpeed
-end
-speedSlider.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then sliding = true updateSlider(i) end end)
-UIS.InputChanged:Connect(function(i) if sliding and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then updateSlider(i) end end)
-UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then sliding = false end end)
-
-flyBtn.MouseButton1Click:Connect(function()
-	flying = not flying
-	flyBtn.Text = flying and "Fly: ON" or "Fly: OFF"
+-- TOUCH FLING
+local flingActive = false
+local flingConn = nil
+addToggle(playersPage, "Touch Fling", function(on)
+	flingActive = on
 	local char = LP.Character
 	if not char then return end
-	local hum = char:FindFirstChildOfClass("Humanoid")
 	local root = char:FindFirstChild("HumanoidRootPart")
-	if not hum or not root then return end
-
-	if flying then
-		hum.PlatformStand = true
-		local bv = Instance.new("BodyVelocity", root)
-		bv.Name = "FlyVel"
-		bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+	if not root then return end
+	
+	if flingActive then
+		local spin = Instance.new("AngularVelocity", root)
+		spin.Name = "FlingSpin"
+		spin.AngularVelocity = Vector3.new(0, 99999, 0)
+		spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+		spin.P = math.huge
 		
-		-- Гироскоп для Shift Lock
-		local bg = Instance.new("BodyGyro", root)
-		bg.Name = "FlyGyro"
-		bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-		bg.P = 10000
-		
-		-- Отслеживаем кнопки для ПК
-		local keyMove = {f=0, b=0, l=0, r=0, up=0, down=0}
-		UIS.InputBegan:Connect(function(i, g)
-			if g then return end
-			if i.KeyCode == Enum.KeyCode.W then keyMove.f = 1 end
-			if i.KeyCode == Enum.KeyCode.S then keyMove.b = -1 end
-			if i.KeyCode == Enum.KeyCode.A then keyMove.l = -1 end
-			if i.KeyCode == Enum.KeyCode.D then keyMove.r = 1 end
-			if i.KeyCode == Enum.KeyCode.Space then keyMove.up = 1 end
-			if i.KeyCode == Enum.KeyCode.LeftShift then keyMove.down = -1 end
-		end)
-		UIS.InputEnded:Connect(function(i)
-			if i.KeyCode == Enum.KeyCode.W then keyMove.f = 0 end
-			if i.KeyCode == Enum.KeyCode.S then keyMove.b = 0 end
-			if i.KeyCode == Enum.KeyCode.A then keyMove.l = 0 end
-			if i.KeyCode == Enum.KeyCode.D then keyMove.r = 0 end
-			if i.KeyCode == Enum.KeyCode.Space then keyMove.up = 0 end
-			if i.KeyCode == Enum.KeyCode.LeftShift then keyMove.down = 0 end
-		end)
-
-		task.spawn(function()
-			while flying and char.Parent do
-				RunService.RenderStepped:Wait()
-				
-				local camCF = workspace.CurrentCamera.CFrame
-				
-				-- Принудительный поворот (Shift Lock)
-				bg.CFrame = CFrame.new(root.Position, root.Position + camCF.LookVector)
-				
-				-- Берем направление с джойстика (MoveDirection), но применяем его только если есть ввод
-				local moveDir = hum.MoveDirection
-				local finalDir = Vector3.new(0, 0, 0)
-				
-				if moveDir.Magnitude > 0 then
-					-- Джойстик двигает относительно камеры
-					local forward = camCF.LookVector * (moveDir.Z * -1) 
-					local right = camCF.RightVector * moveDir.X
-					finalDir = (forward + right).Unit * flySpeed
-				else
-					-- Если джойстика нет, используем кнопки (для ПК)
-					local forward = camCF.LookVector * keyMove.f
-					local backward = camCF.LookVector * keyMove.b
-					local left = camCF.RightVector * keyMove.l
-					local right = camCF.RightVector * keyMove.r
-					local up = Vector3.new(0, 1, 0) * keyMove.up
-					local down = Vector3.new(0, 1, 0) * keyMove.down
-					
-					local manualDir = forward + backward + left + right + up + down
-					if manualDir.Magnitude > 0 then
-						finalDir = manualDir.Unit * flySpeed
-					end
-				end
-				
-				bv.Velocity = finalDir
+		flingConn = root.Touched:Connect(function(hit)
+			if not flingActive then return end
+			local hitChar = hit.Parent
+			if hitChar and hitChar ~= char and hitChar:FindFirstChild("HumanoidRootPart") then
+				local hitRoot = hitChar:FindFirstChild("HumanoidRootPart")
+				local bv = Instance.new("BodyVelocity", hitRoot)
+				bv.Velocity = Vector3.new(0, 50000, 0)
+				bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+				game:GetService("Debris"):AddItem(bv, 1)
 			end
 		end)
 	else
-		hum.PlatformStand = false
-		local bv = root:FindFirstChild("FlyVel")
-		if bv then bv:Destroy() end
-		local bg = root:FindFirstChild("FlyGyro")
-		if bg then bg:Destroy() end
+		local spin = root:FindFirstChild("FlingSpin")
+		if spin then spin:Destroy() end
+		if flingConn then flingConn:Disconnect() flingConn = nil end
 	end
 end)
+
+-- Респавн для флинга
+LP.CharacterAdded:Connect(function()
+	if flingActive then task.wait(1) 
+		local char = LP.Character
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			local spin = Instance.new("AngularVelocity", char.HumanoidRootPart)
+			spin.Name = "FlingSpin"
+			spin.AngularVelocity = Vector3.new(0, 99999, 0)
+			spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+		end
+	end
+end)
+
+print("Универсал: Часть 2 загружена. Touch Fling в Players.")
