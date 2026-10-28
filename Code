@@ -1,600 +1,359 @@
---// Xukeni Mobile Source (Menu + ESP + Teleport + Fly)
+-- Xukeni Tabbed Menu (Fixed Fly Movement)
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
+local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-
 local LP = Players.LocalPlayer
 local PG = LP:WaitForChild("PlayerGui")
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "XukeniMenu"
+gui.Name = "Xukeni"
 gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
-gui.DisplayOrder = 999
 gui.Parent = PG
 
-local function corner(o, r) local c = Instance.new("UICorner") c.CornerRadius = r c.Parent = o end
-local ACCENT = Color3.fromRGB(110, 190, 255)
-local OFF = Color3.fromRGB(70, 85, 120)
-
 -- ОКНО КЛЮЧА
-local KeyWindow = Instance.new("Frame")
-KeyWindow.Size = UDim2.fromOffset(300, 230)
-KeyWindow.Position = UDim2.fromScale(0.5, 0.5)
-KeyWindow.AnchorPoint = Vector2.new(0.5, 0.5)
-KeyWindow.BackgroundColor3 = Color3.fromRGB(15, 30, 70)
-KeyWindow.BorderSizePixel = 0
-KeyWindow.ZIndex = 50
-KeyWindow.Parent = gui
-corner(KeyWindow, UDim.new(0, 16))
-
-local kTitle = Instance.new("TextLabel", KeyWindow)
-kTitle.Size = UDim2.new(1, 0, 0, 40)
-kTitle.Position = UDim2.fromOffset(0, 10)
-kTitle.BackgroundTransparency = 1
-kTitle.Text = "Xukeni | Key System"
-kTitle.Font = Enum.Font.GothamBold
-kTitle.TextSize = 18
-kTitle.TextColor3 = Color3.new(1, 1, 1)
-kTitle.ZIndex = 51
-
-local kBox = Instance.new("TextBox", KeyWindow)
-kBox.Size = UDim2.new(1, -40, 0, 42)
-kBox.Position = UDim2.fromOffset(20, 90)
-kBox.BackgroundColor3 = Color3.fromRGB(10, 20, 50)
-kBox.BorderSizePixel = 0
-kBox.PlaceholderText = "Введите ключ..."
-kBox.Font = Enum.Font.GothamMedium
-kBox.TextSize = 15
-kBox.TextColor3 = Color3.new(1, 1, 1)
-kBox.ZIndex = 51
-corner(kBox, UDim.new(0, 10))
-
-local kBtn = Instance.new("TextButton", KeyWindow)
-kBtn.Size = UDim2.new(1, -40, 0, 42)
-kBtn.Position = UDim2.fromOffset(20, 145)
-kBtn.BackgroundColor3 = ACCENT
-kBtn.Text = "Подтвердить"
-kBtn.Font = Enum.Font.GothamBold
-kBtn.TextSize = 15
-kBtn.TextColor3 = Color3.new(1, 1, 1)
-kBtn.ZIndex = 51
-corner(kBtn, UDim.new(0, 10))
-
-local kStatus = Instance.new("TextLabel", KeyWindow)
-kStatus.Size = UDim2.new(1, -40, 0, 20)
-kStatus.Position = UDim2.fromOffset(20, 195)
-kStatus.BackgroundTransparency = 1
-kStatus.Text = ""
-kStatus.Font = Enum.Font.GothamMedium
-kStatus.TextSize = 12
-kStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
-kStatus.ZIndex = 51
-
--- ОСНОВНОЙ СКРИПТ
-local function loadMainScript()
-	local menu = Instance.new("Frame")
-	menu.AnchorPoint = Vector2.new(0.5, 0.5)
-	menu.Position = UDim2.fromScale(0.5, 0.5)
-	menu.Size = UDim2.fromOffset(420, 300) 
-	menu.BackgroundColor3 = Color3.fromRGB(20, 40, 90)
-	menu.ClipsDescendants = true
-	menu.Visible = false
-	menu.Parent = gui
-	corner(menu, UDim.new(0, 18))
-
-	local title = Instance.new("TextLabel", menu)
-	title.Size = UDim2.new(1, 0, 0, 36)
-	title.Position = UDim2.fromOffset(0, 10)
-	title.BackgroundTransparency = 1
-	title.Text = "By Xukeni"
-	title.Font = Enum.Font.GothamBold
-	title.TextSize = 17
-	title.TextColor3 = Color3.new(1, 1, 1)
-	title.ZIndex = 3
-
-	local tabBar = Instance.new("Frame", menu)
-	tabBar.Size = UDim2.new(1, -30, 0, 34)
-	tabBar.Position = UDim2.fromOffset(15, 58)
-	tabBar.BackgroundColor3 = Color3.fromRGB(15, 30, 70)
-	tabBar.ZIndex = 3
-	corner(tabBar, UDim.new(0, 12))
-	local tabLayout = Instance.new("UIListLayout", tabBar)
-	tabLayout.FillDirection = Enum.FillDirection.Horizontal
-	tabLayout.Padding = UDim.new(0, 4)
-	tabLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-	local tabPad = Instance.new("UIPadding", tabBar)
-	tabPad.PaddingLeft = UDim.new(0, 4)
-	tabPad.PaddingRight = UDim.new(0, 4)
-
-	local pages, tabButtons = {}, {}
-
-	local function selectTab(name)
-		for n, page in pairs(pages) do
-			page.Visible = (n == name)
-			TweenService:Create(tabButtons[n], TweenInfo.new(0.2), { BackgroundTransparency = (n == name) and 0.1 or 1 }):Play()
-		end
-	end
-
-	local function createTab(name)
-		local b = Instance.new("TextButton", tabBar)
-		b.Size = UDim2.new(1/3, -3, 0, 26)
-		b.BackgroundColor3 = ACCENT
-		b.BackgroundTransparency = 1
-		b.Text = name
-		b.Font = Enum.Font.GothamBold
-		b.TextSize = 13
-		b.TextColor3 = Color3.new(1, 1, 1)
-		b.ZIndex = 4
-		corner(b, UDim.new(0, 9))
-		tabButtons[name] = b
-
-		local page = Instance.new("ScrollingFrame", menu)
-		page.Size = UDim2.new(1, -30, 1, -108)
-		page.Position = UDim2.fromOffset(15, 100)
-		page.BackgroundTransparency = 1
-		page.ScrollBarThickness = 3
-		page.AutomaticCanvasSize = Enum.AutomaticSize.Y
-		page.Visible = false
-		page.ZIndex = 3
-		local l = Instance.new("UIListLayout", page)
-		l.Padding = UDim.new(0, 8)
-		pages[name] = page
-
-		b.MouseButton1Click:Connect(function() selectTab(name) end)
-		return page
-	end
-
-	local function addToggle(page, text, callback)
-		local state = false
-		local row = Instance.new("TextButton", page)
-		row.Size = UDim2.new(1, -6, 0, 44)
-		row.BackgroundColor3 = Color3.fromRGB(15, 30, 70)
-		row.BackgroundTransparency = 0.35
-		row.Text = ""
-		row.ZIndex = 4
-		corner(row, UDim.new(0, 12))
-
-		local lbl = Instance.new("TextLabel", row)
-		lbl.Size = UDim2.new(1, -80, 1, 0)
-		lbl.Position = UDim2.fromOffset(14, 0)
-		lbl.BackgroundTransparency = 1
-		lbl.Text = text
-		lbl.Font = Enum.Font.GothamMedium
-		lbl.TextSize = 15
-		lbl.TextColor3 = Color3.new(1, 1, 1)
-		lbl.TextXAlignment = Enum.TextXAlignment.Left
-		lbl.ZIndex = 5
-
-		local track = Instance.new("Frame", row)
-		track.Size = UDim2.fromOffset(44, 24)
-		track.Position = UDim2.new(1, -58, 0.5, -12)
-		track.BackgroundColor3 = OFF
-		track.ZIndex = 5
-		corner(track, UDim.new(1, 0))
-
-		local knob = Instance.new("Frame", track)
-		knob.Size = UDim2.fromOffset(18, 18)
-		knob.Position = UDim2.fromOffset(3, 3)
-		knob.BackgroundColor3 = Color3.new(1, 1, 1)
-		knob.ZIndex = 6
-		corner(knob, UDim.new(1, 0))
-
-		row.MouseButton1Click:Connect(function()
-			state = not state
-			TweenService:Create(track, TweenInfo.new(0.2), {BackgroundColor3 = state and ACCENT or OFF}):Play()
-			TweenService:Create(knob, TweenInfo.new(0.2), {Position = state and UDim2.fromOffset(23, 3) or UDim2.fromOffset(3, 3)}):Play()
-			if callback then task.spawn(callback, state) end
-		end)
-	end
-
-	local function addSlider(page, text, min, max, default, callback)
-		local row = Instance.new("Frame", page)
-		row.Size = UDim2.new(1, -6, 0, 60)
-		row.BackgroundColor3 = Color3.fromRGB(15, 30, 70)
-		row.BackgroundTransparency = 0.35
-		row.ZIndex = 4
-		corner(row, UDim.new(0, 12))
-
-		local lbl = Instance.new("TextLabel", row)
-		lbl.Size = UDim2.new(1, -80, 0, 24)
-		lbl.Position = UDim2.fromOffset(14, 6)
-		lbl.BackgroundTransparency = 1
-		lbl.Text = text
-		lbl.Font = Enum.Font.GothamMedium
-		lbl.TextSize = 15
-		lbl.TextColor3 = Color3.new(1, 1, 1)
-		lbl.TextXAlignment = Enum.TextXAlignment.Left
-		lbl.ZIndex = 5
-
-		local valLbl = Instance.new("TextLabel", row)
-		valLbl.Size = UDim2.fromOffset(60, 24)
-		valLbl.Position = UDim2.new(1, -74, 0, 6)
-		valLbl.BackgroundTransparency = 1
-		valLbl.Font = Enum.Font.GothamBold
-		valLbl.TextSize = 15
-		valLbl.TextColor3 = ACCENT
-		valLbl.TextXAlignment = Enum.TextXAlignment.Right
-		valLbl.ZIndex = 5
-
-		local track = Instance.new("Frame", row)
-		track.Size = UDim2.new(1, -28, 0, 6)
-		track.Position = UDim2.fromOffset(14, 42)
-		track.BackgroundColor3 = OFF
-		track.ZIndex = 5
-		corner(track, UDim.new(1, 0))
-
-		local fill = Instance.new("Frame", track)
-		fill.BackgroundColor3 = ACCENT
-		fill.ZIndex = 6
-		corner(fill, UDim.new(1, 0))
-
-		local knob = Instance.new("Frame", track)
-		knob.Size = UDim2.fromOffset(16, 16)
-		knob.AnchorPoint = Vector2.new(0.5, 0.5)
-		knob.BackgroundColor3 = Color3.new(1, 1, 1)
-		knob.ZIndex = 7
-		corner(knob, UDim.new(1, 0))
-
-		local hit = Instance.new("TextButton", row)
-		hit.Size = UDim2.new(1, 0, 0, 28)
-		hit.Position = UDim2.fromOffset(0, 30)
-		hit.BackgroundTransparency = 1
-		hit.Text = ""
-		hit.ZIndex = 8
-
-		local function setAlpha(a)
-			a = math.clamp(a, 0, 1)
-			local value = math.floor(min + (max - min) * a + 0.5)
-			fill.Size = UDim2.fromScale(a, 1)
-			knob.Position = UDim2.new(a, 0, 0.5, 0)
-			valLbl.Text = tostring(value)
-			if callback then task.spawn(callback, value) end
-		end
-		local function fromInput(input)
-			setAlpha((input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X)
-		end
-
-		local sliding = false
-		hit.InputBegan:Connect(function(i)
-			if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-				sliding = true
-				fromInput(i)
-			end
-		end)
-		UserInputService.InputChanged:Connect(function(i)
-			if sliding and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-				fromInput(i)
-			end
-		end)
-		UserInputService.InputEnded:Connect(function(i)
-			if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-				sliding = false
-			end
-		end)
-
-		setAlpha((default - min) / (max - min))
-	end
-
-	-- ESP ЛОГИКА
-	local ESP = { Enabled = false, ShowChams = true, ShowName = true, ShowDistance = true, MaxDistance = 500, Data = {} }
-	local Camera = Workspace.CurrentCamera
-
-	local function isTeammate(p)
-		if not p.Team or not LP.Team then return false end
-		return p.Team == LP.Team
-	end
-
-	local function createESP(p)
-		if p == LP then return end
-		if ESP.Data[p] then return end
-		local char = p.Character
-		if not char then return end
-		local head = char:FindFirstChild("Head")
-		if not head then return end
-
-		local highlight = Instance.new("Highlight", char)
-		highlight.Adornee = char
-		highlight.FillColor = ACCENT
-		highlight.FillTransparency = 0.55
-		highlight.OutlineColor = ACCENT
-		highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-		highlight.Enabled = false
-
-		local billboard = Instance.new("BillboardGui", char)
-		billboard.Adornee = head
-		billboard.Size = UDim2.new(0, 200, 0, 60)
-		billboard.StudsOffset = Vector3.new(0, 3.2, 0)
-		billboard.AlwaysOnTop = true
-		billboard.Enabled = false
-
-		local nameLabel = Instance.new("TextLabel", billboard)
-		nameLabel.Size = UDim2.new(1, 0, 0, 20)
-		nameLabel.BackgroundTransparency = 1
-		nameLabel.Text = p.Name
-		nameLabel.TextColor3 = Color3.new(1, 1, 1)
-		nameLabel.TextStrokeTransparency = 0
-		nameLabel.Font = Enum.Font.GothamBold
-		nameLabel.TextSize = 14
-
-		local distLabel = Instance.new("TextLabel", billboard)
-		distLabel.Size = UDim2.new(1, 0, 0, 16)
-		distLabel.Position = UDim2.new(0, 0, 0, 20)
-		distLabel.BackgroundTransparency = 1
-		distLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-		distLabel.TextStrokeTransparency = 0
-		distLabel.Font = Enum.Font.Gotham
-		distLabel.TextSize = 12
-
-		ESP.Data[p] = { H = highlight, B = billboard, N = nameLabel, D = distLabel }
-	end
-
-	local function removeESP(p)
-		local d = ESP.Data[p]
-		if not d then return end
-		pcall(function() d.H:Destroy() end)
-		pcall(function() d.B:Destroy() end)
-		ESP.Data[p] = nil
-	end
-
-	local function hookPlayer(p)
-		createESP(p)
-		p.CharacterAdded:Connect(function()
-			task.wait(0.6)
-			removeESP(p)
-			createESP(p)
-		end)
-	end
-
-	Players.PlayerAdded:Connect(hookPlayer)
-	for _, p in ipairs(Players:GetPlayers()) do hookPlayer(p) end
-	Players.PlayerRemoving:Connect(removeESP)
-
-	RunService.RenderStepped:Connect(function()
-		for p, d in pairs(ESP.Data) do
-			local char = p.Character
-			local root = char and (char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso"))
-			local hum = char and char:FindFirstChildOfClass("Humanoid")
-
-			if not ESP.Enabled or not char or not root or not hum or hum.Health <= 0 or isTeammate(p) then
-				pcall(function() d.H.Enabled = false; d.B.Enabled = false end)
-				continue
-			end
-
-			local dist = (root.Position - Camera.CFrame.Position).Magnitude
-			if dist > ESP.MaxDistance then
-				pcall(function() d.H.Enabled = false; d.B.Enabled = false end)
-				continue
-			end
-
-			pcall(function()
-				d.H.Enabled = ESP.ShowChams
-				d.B.Enabled = true
-				d.N.Visible = ESP.ShowName
-				d.D.Visible = ESP.ShowDistance
-				d.D.Text = string.format("[%d]", math.floor(dist))
-			end)
-		end
-	end)
-
-	-- ТЕЛЕПОРТ
-	local SelectedPlayer = nil
-	local PlayerListFrame = nil
-	local PlayerButtons = {}
-
-	local function teleportTo(target)
-		if not target or not target.Character then return end
-		local tRoot = target.Character:FindFirstChild("HumanoidRootPart") or target.Character:FindFirstChild("Torso")
-		local myChar = LP.Character
-		local mRoot = myChar and (myChar:FindFirstChild("HumanoidRootPart") or myChar:FindFirstChild("Torso"))
-		if tRoot and mRoot then
-			mRoot.CFrame = tRoot.CFrame * CFrame.new(0, 0, 3)
-		end
-	end
-
-	local function refreshPlayerList()
-		if not PlayerListFrame then return end
-		for _, b in ipairs(PlayerButtons) do b:Destroy() end
-		PlayerButtons = {}
-
-		for _, p in ipairs(Players:GetPlayers()) do
-			if p ~= LP then
-				local b = Instance.new("TextButton", PlayerListFrame)
-				b.Size = UDim2.new(1, -6, 0, 44)
-				b.BackgroundColor3 = (p == SelectedPlayer) and ACCENT or Color3.fromRGB(15, 30, 70)
-				b.Text = p.Name
-				b.Font = Enum.Font.GothamBold
-				b.TextSize = 15
-				b.TextColor3 = Color3.new(1, 1, 1)
-				b.ZIndex = 4
-				corner(b, UDim.new(0, 12))
-
-				b.MouseButton1Click:Connect(function()
-					SelectedPlayer = (SelectedPlayer == p) and nil or p
-					refreshPlayerList()
-				end)
-				table.insert(PlayerButtons, b)
-			end
-		end
-	end
-
-	local visuals = createTab("Visuals")
-	local combat = createTab("Combat")
-	local playersTab = createTab("Players")
-
-	addToggle(visuals, "ESP вкл/выкл", function(on) ESP.Enabled = on end)
-	addToggle(visuals, "Чамсы (сквозь стены)", function(on) ESP.ShowChams = on end)
-	addToggle(visuals, "Имена", function(on) ESP.ShowName = on end)
-	addToggle(visuals, "Дистанция", function(on) ESP.ShowDistance = on end)
-	addSlider(visuals, "Макс. дистанция", 50, 1000, 500, function(v) ESP.MaxDistance = v end)
-
-	-- ПОЛЁТ
-	local flying = false
-	addToggle(combat, "Fly (Полёт)", function(on)
-		flying = on
-		local plr = LP
-		local char = plr.Character
-		if not char then return end
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		local torso = char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
-		if not hum or not torso then return end
-
-		if not flying then
-			hum.PlatformStand = false
-			if char:FindFirstChild("Animate") then char.Animate.Disabled = false end
-			local bg = torso:FindFirstChild("FlyGyro")
-			local bv = torso:FindFirstChild("FlyVel")
-			if bg then bg:Destroy() end
-			if bv then bv:Destroy() end
-			hum:ChangeState(Enum.HumanoidStateType.Running)
-		else
-			hum.PlatformStand = true
-			if char:FindFirstChild("Animate") then char.Animate.Disabled = true end
-
-			local bg = Instance.new("BodyGyro", torso)
-			bg.Name = "FlyGyro"
-			bg.P = 9e4
-			bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-			bg.cframe = torso.CFrame
-
-			local bv = Instance.new("BodyVelocity", torso)
-			bv.Name = "FlyVel"
-			bv.velocity = Vector3.new(0, 0.1, 0)
-			bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
-
-			local speed = 0
-			local maxspeed = 50
-			local ctrl = {f = 0, b = 0, l = 0, r = 0}
-			local lastctrl = {f = 0, b = 0, l = 0, r = 0}
-
-			UserInputService.InputBegan:Connect(function(input, gp)
-				if gp then return end
-				if input.KeyCode == Enum.KeyCode.W then ctrl.f = 1 end
-				if input.KeyCode == Enum.KeyCode.S then ctrl.b = -1 end
-				if input.KeyCode == Enum.KeyCode.A then ctrl.l = -1 end
-				if input.KeyCode == Enum.KeyCode.D then ctrl.r = 1 end
-			end)
-			UserInputService.InputEnded:Connect(function(input, gp)
-				if gp then return end
-				if input.KeyCode == Enum.KeyCode.W then ctrl.f = 0 end
-				if input.KeyCode == Enum.KeyCode.S then ctrl.b = 0 end
-				if input.KeyCode == Enum.KeyCode.A then ctrl.l = 0 end
-				if input.KeyCode == Enum.KeyCode.D then ctrl.r = 0 end
-			end)
-
-			task.spawn(function()
-				while flying and char.Parent and hum.Health > 0 do
-					RunService.RenderStepped:Wait()
-					if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
-						speed = math.min(speed + 1, maxspeed)
-					else
-						speed = math.max(speed - 1, 0)
-					end
-
-					if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
-						bv.velocity = ((Camera.CFrame.lookVector * (ctrl.f + ctrl.b)) + ((Camera.CFrame * CFrame.new(ctrl.l + ctrl.r, (ctrl.f + ctrl.b) * 0.2, 0).p) - Camera.CFrame.p)) * speed
-						lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
-					elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
-						bv.velocity = ((Camera.CFrame.lookVector * (lastctrl.f + lastctrl.b)) + ((Camera.CFrame * CFrame.new(lastctrl.l + lastctrl.r, (lastctrl.f + lastctrl.b) * 0.2, 0).p) - Camera.CFrame.p)) * speed
-					else
-						bv.velocity = Vector3.new(0, 0, 0)
-					end
-					bg.cframe = Camera.CFrame * CFrame.Angles(-math.rad((ctrl.f + ctrl.b) * 50 * speed / maxspeed), 0, 0)
-				end
-			end)
-		end
-	end)
-
-	local refreshBtn = Instance.new("TextButton", playersTab)
-	refreshBtn.Size = UDim2.new(1, -6, 0, 40)
-	refreshBtn.BackgroundColor3 = Color3.fromRGB(40, 90, 160)
-	refreshBtn.Text = "Обновить список"
-	refreshBtn.Font = Enum.Font.GothamBold
-	refreshBtn.TextSize = 14
-	refreshBtn.TextColor3 = Color3.new(1, 1, 1)
-	refreshBtn.ZIndex = 4
-	corner(refreshBtn, UDim.new(0, 10))
-	refreshBtn.MouseButton1Click:Connect(refreshPlayerList)
-
-	local listHolder = Instance.new("Frame", playersTab)
-	listHolder.Size = UDim2.new(1, -6, 0, 180)
-	listHolder.BackgroundColor3 = Color3.fromRGB(10, 20, 50)
-	listHolder.ZIndex = 3
-	corner(listHolder, UDim.new(0, 12))
-
-	local listScroll = Instance.new("ScrollingFrame", listHolder)
-	listScroll.Size = UDim2.new(1, -10, 1, -10)
-	listScroll.Position = UDim2.fromOffset(5, 5)
-	listScroll.BackgroundTransparency = 1
-	listScroll.ScrollBarThickness = 3
-	listScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-	listScroll.ZIndex = 3
-	PlayerListFrame = listScroll
-	local listLayout = Instance.new("UIListLayout", listScroll)
-	listLayout.Padding = UDim.new(0, 6)
-
-	local tpBtn = Instance.new("TextButton", playersTab)
-	tpBtn.Size = UDim2.new(1, -6, 0, 46)
-	tpBtn.BackgroundColor3 = ACCENT
-	tpBtn.Text = "Teleport"
-	tpBtn.Font = Enum.Font.GothamBold
-	tpBtn.TextSize = 16
-	tpBtn.TextColor3 = Color3.new(1, 1, 1)
-	tpBtn.ZIndex = 4
-	corner(tpBtn, UDim.new(0, 12))
-	tpBtn.MouseButton1Click:Connect(function()
-		if SelectedPlayer then teleportTo(SelectedPlayer) end
-	end)
-
-	task.spawn(function() task.wait(1) refreshPlayerList() end)
-	selectTab("Visuals")
-
-	local dragging, dragStart, startPos
-	local function startDrag(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			dragStart = input.Position
-			startPos = menu.Position
-		end
-	end
-	local function updateDrag(input)
-		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-			local delta = input.Position - dragStart
-			menu.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-		end
-	end
-	local function endDrag(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = false
-		end
-	end
-	title.InputBegan:Connect(startDrag)
-	UserInputService.InputChanged:Connect(updateDrag)
-	UserInputService.InputEnded:Connect(endDrag)
-
-	local btn = Instance.new("TextButton", gui)
-	btn.Size = UDim2.fromOffset(60, 60)
-	btn.Position = UDim2.new(0, 20, 0.5, -30)
-	btn.BackgroundColor3 = Color3.fromRGB(50, 100, 215)
-	btn.Text = "X"
-	btn.Font = Enum.Font.GothamBlack
-	btn.TextSize = 26
+local keyFrame = Instance.new("Frame", gui)
+keyFrame.Size = UDim2.fromOffset(250, 170)
+keyFrame.Position = UDim2.fromScale(0.5, 0.5)
+keyFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+keyFrame.BackgroundColor3 = Color3.fromRGB(20, 30, 50)
+Instance.new("UICorner", keyFrame).CornerRadius = UDim.new(0, 10)
+
+local keyLabel = Instance.new("TextLabel", keyFrame)
+keyLabel.Size = UDim2.new(1, -20, 0, 30)
+keyLabel.Position = UDim2.fromOffset(10, 10)
+keyLabel.BackgroundTransparency = 1
+keyLabel.Text = "Введи ключ хуила"
+keyLabel.TextColor3 = Color3.new(1, 1, 1)
+keyLabel.Font = Enum.Font.GothamBold
+keyLabel.TextSize = 16
+
+local keyBox = Instance.new("TextBox", keyFrame)
+keyBox.Size = UDim2.new(1, -20, 0, 40)
+keyBox.Position = UDim2.fromOffset(10, 50)
+keyBox.BackgroundColor3 = Color3.fromRGB(10, 15, 25)
+keyBox.TextColor3 = Color3.new(1, 1, 1)
+keyBox.PlaceholderText = "Сюда пиши"
+Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0, 6)
+
+local keyBtn = Instance.new("TextButton", keyFrame)
+keyBtn.Size = UDim2.new(1, -20, 0, 40)
+keyBtn.Position = UDim2.fromOffset(10, 110)
+keyBtn.BackgroundColor3 = Color3.fromRGB(110, 190, 255)
+keyBtn.Text = "Войти"
+keyBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0, 6)
+
+-- МЕНЮ
+local menu = Instance.new("Frame", gui)
+menu.Size = UDim2.fromOffset(400, 320)
+menu.Position = UDim2.fromScale(0.5, 0.5)
+menu.AnchorPoint = Vector2.new(0.5, 0.5)
+menu.BackgroundColor3 = Color3.fromRGB(20, 30, 50)
+menu.Visible = false
+Instance.new("UICorner", menu).CornerRadius = UDim.new(0, 10)
+
+-- ВКЛАДКИ
+local tabBar = Instance.new("Frame", menu)
+tabBar.Size = UDim2.new(1, 0, 0, 40)
+tabBar.BackgroundColor3 = Color3.fromRGB(15, 25, 40)
+Instance.new("UICorner", tabBar).CornerRadius = UDim.new(0, 10)
+local tabLayout = Instance.new("UIListLayout", tabBar)
+tabLayout.FillDirection = Enum.FillDirection.Horizontal
+tabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+tabLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+tabLayout.Padding = UDim.new(0, 5)
+
+local pages = {}
+local function createPage(name)
+	local btn = Instance.new("TextButton", tabBar)
+	btn.Size = UDim2.new(0.3, 0, 0, 30)
+	btn.BackgroundColor3 = Color3.fromRGB(110, 190, 255)
+	btn.Text = name
 	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.ZIndex = 20
-	corner(btn, UDim.new(1, 0))
-
-	local open = false
-	local btnDragging = false
-	local btnStart, btnPos
-
-	btn.InputBegan:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			btnDragging = true
-			btnStart = i.Position
-			btnPos = btn.Position
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 12
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+	
+	local page = Instance.new("Frame", menu)
+	page.Size = UDim2.new(1, -20, 1, -60)
+	page.Position = UDim2.fromOffset(10, 50)
+	page.BackgroundTransparency = 1
+	page.Visible = false
+	
+	pages[name] = {Page = page, Button = btn}
+	btn.MouseButton1Click:Connect(function()
+		for n, p in pairs(pages) do
+			p.Page.Visible = (n == name)
+			p.Button.BackgroundColor3 = (n == name) and Color3.fromRGB(110, 190, 255) or Color3.fromRGB(30, 45, 70)
 		end
 	end)
-	UserInputService.InputChanged:Connect(function(i)
-		if btnDragging and (i.UserInputTyp
+	return page
+end
+
+local visualsPage = createPage("Visuals")
+local playersPage = createPage("Players")
+local movementPage = createPage("Movement")
+
+-- КНОПКА
+local openBtn = Instance.new("TextButton", gui)
+openBtn.Size = UDim2.fromOffset(60, 60)
+openBtn.Position = UDim2.new(0, 20, 0.5, -30)
+openBtn.BackgroundColor3 = Color3.fromRGB(110, 190, 255)
+openBtn.Text = "X"
+openBtn.TextColor3 = Color3.new(1, 1, 1)
+openBtn.Font = Enum.Font.GothamBold
+openBtn.TextSize = 24
+openBtn.Visible = false
+Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1, 0)
+
+keyBtn.MouseButton1Click:Connect(function()
+	if keyBox.Text == "ByXukeni" then
+		keyFrame:Destroy()
+		openBtn.Visible = true
+		pages.Visuals.Page.Visible = true
+		pages.Visuals.Button.BackgroundColor3 = Color3.fromRGB(110, 190, 255)
+	else
+		keyBox.Text = ""
+		keyLabel.Text = "Неверный ключ хуила!"
+		keyLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+	end
+end)
+
+openBtn.MouseButton1Click:Connect(function()
+	menu.Visible = not menu.Visible
+end)
+
+-- ================= VISUALS =================
+local espActive = false
+local activeEspData = {}
+local espColor = Color3.fromRGB(110, 190, 255)
+
+local espBtn = Instance.new("TextButton", visualsPage)
+espBtn.Size = UDim2.new(1, 0, 0, 40)
+espBtn.BackgroundColor3 = Color3.fromRGB(30, 45, 70)
+espBtn.Text = "ESP: OFF"
+espBtn.TextColor3 = Color3.new(1, 1, 1)
+espBtn.Position = UDim2.fromOffset(0, 0)
+Instance.new("UICorner", espBtn).CornerRadius = UDim.new(0, 6)
+
+local function createESP(p)
+	if p == LP or not p.Character then return end
+	local char = p.Character
+	local head = char:FindFirstChild("Head")
+	if not head then return end
+	local hl = Instance.new("Highlight", char)
+	hl.FillColor = espColor hl.OutlineColor = espColor hl.FillTransparency = 0.6
+	hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	local bb = Instance.new("BillboardGui", char)
+	bb.Adornee = head bb.Size = UDim2.new(0, 200, 0, 50) bb.StudsOffset = Vector3.new(0, 3, 0) bb.AlwaysOnTop = true
+	local name = Instance.new("TextLabel", bb)
+	name.Size = UDim2.new(1, 0, 0, 20) name.BackgroundTransparency = 1 name.Text = p.Name name.TextColor3 = espColor
+	name.TextStrokeTransparency = 0 name.Font = Enum.Font.GothamBold name.TextSize = 14
+	local dist = Instance.new("TextLabel", bb)
+	dist.Size = UDim2.new(1, 0, 0, 16) dist.Position = UDim2.new(0, 0, 0, 20) dist.BackgroundTransparency = 1
+	dist.TextColor3 = Color3.new(1, 1, 1) dist.TextStrokeTransparency = 0 dist.Font = Enum.Font.Gotham dist.TextSize = 12
+	activeEspData[p] = {Highlight = hl, Billboard = bb, NameLabel = name, DistLabel = dist, Char = char}
+end
+
+espBtn.MouseButton1Click:Connect(function()
+	espActive = not espActive
+	espBtn.Text = espActive and "ESP: ON" or "ESP: OFF"
+	if espActive then
+		for _, p in ipairs(Players:GetPlayers()) do createESP(p) end
+	else
+		for p, d in pairs(activeEspData) do
+			if d.Highlight then d.Highlight:Destroy() end
+			if d.Billboard then d.Billboard:Destroy() end
+		end
+		activeEspData = {}
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	if not espActive then return end
+	for p, d in pairs(activeEspData) do
+		if d.Char and d.Char:FindFirstChild("HumanoidRootPart") then
+			local dist = (d.Char.HumanoidRootPart.Position - workspace.CurrentCamera.CFrame.Position).Magnitude
+			d.DistLabel.Text = string.format("[%d]", math.floor(dist))
+		end
+	end
+end)
+
+-- ================= PLAYERS =================
+local selectedPlayer = nil
+local playerList = Instance.new("ScrollingFrame", playersPage)
+playerList.Size = UDim2.new(1, 0, 0, 150)
+playerList.BackgroundTransparency = 1
+playerList.ScrollBarThickness = 3
+playerList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+local listLayout = Instance.new("UIListLayout", playerList)
+listLayout.Padding = UDim.new(0, 5)
+
+local function refreshList()
+	for _, v in ipairs(playerList:GetChildren()) do
+		if v:IsA("TextButton") then v:Destroy() end
+	end
+	for _, p in ipairs(Players:GetPlayers()) do
+		if p ~= LP then
+			local btn = Instance.new("TextButton", playerList)
+			btn.Size = UDim2.new(1, 0, 0, 35)
+			btn.BackgroundColor3 = (p == selectedPlayer) and Color3.fromRGB(110, 190, 255) or Color3.fromRGB(30, 45, 70)
+			btn.Text = p.Name
+			btn.TextColor3 = Color3.new(1, 1, 1)
+			btn.Font = Enum.Font.GothamBold
+			Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+			btn.MouseButton1Click:Connect(function()
+				selectedPlayer = p
+				refreshList()
+			end)
+		end
+	end
+end
+
+local tpBtn = Instance.new("TextButton", playersPage)
+tpBtn.Size = UDim2.new(1, 0, 0, 40)
+tpBtn.Position = UDim2.fromOffset(0, 160)
+tpBtn.BackgroundColor3 = Color3.fromRGB(110, 190, 255)
+tpBtn.Text = "Телепорт к выбранному"
+tpBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", tpBtn).CornerRadius = UDim.new(0, 6)
+tpBtn.MouseButton1Click:Connect(function()
+	if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+		local myRoot = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+		if myRoot then
+			myRoot.CFrame = selectedPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
+		end
+	end
+end)
+
+task.spawn(function() task.wait(1) refreshList() end)
+Players.PlayerAdded:Connect(function() task.wait(1) refreshList() end)
+Players.PlayerRemoving:Connect(function() task.wait(1) refreshList() end)
+
+-- ================= MOVEMENT (FLY FIX) =================
+local flying = false
+local flySpeed = 50
+
+local flyBtn = Instance.new("TextButton", movementPage)
+flyBtn.Size = UDim2.new(1, 0, 0, 40)
+flyBtn.BackgroundColor3 = Color3.fromRGB(30, 45, 70)
+flyBtn.Text = "Fly: OFF"
+flyBtn.TextColor3 = Color3.new(1, 1, 1)
+flyBtn.Position = UDim2.fromOffset(0, 0)
+Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0, 6)
+
+local speedLabel = Instance.new("TextLabel", movementPage)
+speedLabel.Size = UDim2.new(1, 0, 0, 20)
+speedLabel.Position = UDim2.fromOffset(0, 50)
+speedLabel.BackgroundTransparency = 1
+speedLabel.Text = "Скорость: 50"
+speedLabel.TextColor3 = Color3.new(1, 1, 1)
+
+local speedSlider = Instance.new("TextButton", movementPage)
+speedSlider.Size = UDim2.new(1, 0, 0, 20)
+speedSlider.BackgroundColor3 = Color3.fromRGB(30, 45, 70)
+speedSlider.Text = ""
+speedSlider.Position = UDim2.fromOffset(0, 80)
+Instance.new("UICorner", speedSlider).CornerRadius = UDim.new(1, 0)
+
+local sliderFill = Instance.new("Frame", speedSlider)
+sliderFill.Size = UDim2.new(0.2, 0, 1, 0)
+sliderFill.BackgroundColor3 = Color3.fromRGB(110, 190, 255)
+Instance.new("UICorner", sliderFill).CornerRadius = UDim.new(1, 0)
+
+local sliding = false
+local function updateSlider(input)
+	local rel = math.clamp((input.Position.X - speedSlider.AbsolutePosition.X) / speedSlider.AbsoluteSize.X, 0, 1)
+	flySpeed = math.floor(10 + rel * 190)
+	sliderFill.Size = UDim2.new(rel, 0, 1, 0)
+	speedLabel.Text = "Скорость: " .. flySpeed
+end
+speedSlider.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then sliding = true updateSlider(i) end end)
+UIS.InputChanged:Connect(function(i) if sliding and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then updateSlider(i) end end)
+UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then sliding = false end end)
+
+flyBtn.MouseButton1Click:Connect(function()
+	flying = not flying
+	flyBtn.Text = flying and "Fly: ON" or "Fly: OFF"
+	local char = LP.Character
+	if not char then return end
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not hum or not root then return end
+
+	if flying then
+		hum.PlatformStand = true
+		local bv = Instance.new("BodyVelocity", root)
+		bv.Name = "FlyVel"
+		bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+		
+		-- Гироскоп для Shift Lock
+		local bg = Instance.new("BodyGyro", root)
+		bg.Name = "FlyGyro"
+		bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+		bg.P = 10000
+		
+		-- Отслеживаем кнопки для ПК
+		local keyMove = {f=0, b=0, l=0, r=0, up=0, down=0}
+		UIS.InputBegan:Connect(function(i, g)
+			if g then return end
+			if i.KeyCode == Enum.KeyCode.W then keyMove.f = 1 end
+			if i.KeyCode == Enum.KeyCode.S then keyMove.b = -1 end
+			if i.KeyCode == Enum.KeyCode.A then keyMove.l = -1 end
+			if i.KeyCode == Enum.KeyCode.D then keyMove.r = 1 end
+			if i.KeyCode == Enum.KeyCode.Space then keyMove.up = 1 end
+			if i.KeyCode == Enum.KeyCode.LeftShift then keyMove.down = -1 end
+		end)
+		UIS.InputEnded:Connect(function(i)
+			if i.KeyCode == Enum.KeyCode.W then keyMove.f = 0 end
+			if i.KeyCode == Enum.KeyCode.S then keyMove.b = 0 end
+			if i.KeyCode == Enum.KeyCode.A then keyMove.l = 0 end
+			if i.KeyCode == Enum.KeyCode.D then keyMove.r = 0 end
+			if i.KeyCode == Enum.KeyCode.Space then keyMove.up = 0 end
+			if i.KeyCode == Enum.KeyCode.LeftShift then keyMove.down = 0 end
+		end)
+
+		task.spawn(function()
+			while flying and char.Parent do
+				RunService.RenderStepped:Wait()
+				
+				local camCF = workspace.CurrentCamera.CFrame
+				
+				-- Принудительный поворот (Shift Lock)
+				bg.CFrame = CFrame.new(root.Position, root.Position + camCF.LookVector)
+				
+				-- Берем направление с джойстика (MoveDirection), но применяем его только если есть ввод
+				local moveDir = hum.MoveDirection
+				local finalDir = Vector3.new(0, 0, 0)
+				
+				if moveDir.Magnitude > 0 then
+					-- Джойстик двигает относительно камеры
+					local forward = camCF.LookVector * (moveDir.Z * -1) 
+					local right = camCF.RightVector * moveDir.X
+					finalDir = (forward + right).Unit * flySpeed
+				else
+					-- Если джойстика нет, используем кнопки (для ПК)
+					local forward = camCF.LookVector * keyMove.f
+					local backward = camCF.LookVector * keyMove.b
+					local left = camCF.RightVector * keyMove.l
+					local right = camCF.RightVector * keyMove.r
+					local up = Vector3.new(0, 1, 0) * keyMove.up
+					local down = Vector3.new(0, 1, 0) * keyMove.down
+					
+					local manualDir = forward + backward + left + right + up + down
+					if manualDir.Magnitude > 0 then
+						finalDir = manualDir.Unit * flySpeed
+					end
+				end
+				
+				bv.Velocity = finalDir
+			end
+		end)
+	else
+		hum.PlatformStand = false
+		local bv = root:FindFirstChild("FlyVel")
+		if bv then bv:Destroy() end
+		local bg = root:FindFirstChild("FlyGyro")
+		if bg then bg:Destroy() end
+	end
+end)
