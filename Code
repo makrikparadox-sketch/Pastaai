@@ -1,9 +1,11 @@
--- Универсал | Часть 1
+-- Универсал | Часть 1 (Интерфейс и Меню)
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 local LP = Players.LocalPlayer
 local PG = LP:WaitForChild("PlayerGui")
+local Camera = Workspace.CurrentCamera
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "Universal"
@@ -52,9 +54,9 @@ keyBtn.TextColor3 = Color3.new(1, 1, 1)
 keyBtn.Font = Enum.Font.GothamBold
 corner(keyBtn, UDim.new(0, 6))
 
--- МЕНЮ
+-- МЕНЮ (РАСТЯНУТО)
 local menu = Instance.new("Frame", gui)
-menu.Size = UDim2.fromOffset(400, 380)
+menu.Size = UDim2.fromOffset(480, 380)
 menu.Position = UDim2.fromScale(0.5, 0.5)
 menu.AnchorPoint = Vector2.new(0.5, 0.5)
 menu.BackgroundColor3 = Color3.fromRGB(20, 30, 50)
@@ -84,20 +86,26 @@ local function createPage(name)
 	btn.TextSize = 12
 	corner(btn, UDim.new(0, 6))
 	
-	local page = Instance.new("Frame", menu)
-	page.Size = UDim2.new(1, -20, 1, -60)
-	page.Position = UDim2.fromOffset(10, 50)
-	page.BackgroundTransparency = 1
-	page.Visible = false
+	local scroll = Instance.new("ScrollingFrame", menu)
+	scroll.Size = UDim2.new(1, -20, 1, -60)
+	scroll.Position = UDim2.fromOffset(10, 50)
+	scroll.BackgroundTransparency = 1
+	scroll.BorderSizePixel = 0
+	scroll.ScrollBarThickness = 3
+	scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+	scroll.Visible = false
+	local scrollLayout = Instance.new("UIListLayout", scroll)
+	scrollLayout.Padding = UDim.new(0, 8)
 	
-	pages[name] = {Page = page, Button = btn}
+	pages[name] = {Page = scroll, Button = btn}
 	btn.Activated:Connect(function()
 		for n, p in pairs(pages) do
 			p.Page.Visible = (n == name)
 			p.Button.BackgroundColor3 = (n == name) and ACCENT or OFF
 		end
 	end)
-	return page
+	return scroll
 end
 
 local visualsPage = createPage("Visuals")
@@ -139,7 +147,7 @@ UIS.InputEnded:Connect(function(input)
 	end
 end)
 
--- ЛОГИКА КЛЮЧА
+-- КЛЮЧ
 keyBtn.Activated:Connect(function()
 	if keyBox.Text == "ByXukeni" then
 		keyLabel.Text = "Правильно хуила!"
@@ -160,213 +168,7 @@ end)
 
 openBtn.Activated:Connect(function()
 	menu.Visible = not menu.Visible
-end)
-
--- ================= VISUALS (ESP) =================
-local espActive = false
-local activeEspData = {}
-local espColor = Color3.fromRGB(110, 190, 255)
-local showChams = true
-local showName = true
-local showHealth = true
-local showDist = true
-
-local espBtn = Instance.new("TextButton", visualsPage)
-espBtn.Size = UDim2.new(1, 0, 0, 35)
-espBtn.BackgroundColor3 = OFF
-espBtn.Text = "ESP: OFF"
-espBtn.TextColor3 = Color3.new(1, 1, 1)
-espBtn.Font = Enum.Font.GothamBold
-espBtn.Position = UDim2.fromOffset(0, 0)
-corner(espBtn, UDim.new(0, 6))
-
-local colorBtn = Instance.new("TextButton", visualsPage)
-colorBtn.Size = UDim2.new(1, 0, 0, 35)
-colorBtn.BackgroundColor3 = OFF
-colorBtn.Text = "Цвет: Синий"
-colorBtn.TextColor3 = Color3.new(1, 1, 1)
-colorBtn.Font = Enum.Font.GothamBold
-colorBtn.Position = UDim2.fromOffset(0, 40)
-colorBtn.Visible = false
-corner(colorBtn, UDim.new(0, 6))
-
-local colors = {
-	{Name = "Синий", Color = Color3.fromRGB(110, 190, 255)},
-	{Name = "Белый", Color = Color3.fromRGB(255, 255, 255)},
-	{Name = "Красный", Color = Color3.fromRGB(255, 0, 0)},
-	{Name = "Зеленый", Color = Color3.fromRGB(0, 255, 0)}
-}
-local colorIndex = 1
-
-colorBtn.Activated:Connect(function()
-	colorIndex = colorIndex + 1
-	if colorIndex > #colors then colorIndex = 1 end
-	local c = colors[colorIndex]
-	espColor = c.Color
-	colorBtn.Text = "Цвет: " .. c.Name
-	for p, data in pairs(activeEspData) do
-		if data.Highlight then data.Highlight.FillColor = espColor data.Highlight.OutlineColor = espColor end
-		if data.NameLabel then data.NameLabel.TextColor3 = espColor end
-	end
-end)
-
-local chamsBtn = Instance.new("TextButton", visualsPage)
-chamsBtn.Size = UDim2.new(1, 0, 0, 35)
-chamsBtn.BackgroundColor3 = OFF
-chamsBtn.Text = "CHAMS: ON"
-chamsBtn.TextColor3 = Color3.new(1, 1, 1)
-chamsBtn.Font = Enum.Font.GothamBold
-chamsBtn.Position = UDim2.fromOffset(0, 80)
-chamsBtn.Visible = false
-corner(chamsBtn, UDim.new(0, 6))
-
-local nameBtn = Instance.new("TextButton", visualsPage)
-nameBtn.Size = UDim2.new(1, 0, 0, 35)
-nameBtn.BackgroundColor3 = OFF
-nameBtn.Text = "NAME: ON"
-nameBtn.TextColor3 = Color3.new(1, 1, 1)
-nameBtn.Font = Enum.Font.GothamBold
-nameBtn.Position = UDim2.fromOffset(0, 120)
-nameBtn.Visible = false
-corner(nameBtn, UDim.new(0, 6))
-
-local healthBtn = Instance.new("TextButton", visualsPage)
-healthBtn.Size = UDim2.new(1, 0, 0, 35)
-healthBtn.BackgroundColor3 = OFF
-healthBtn.Text = "HEALTH: ON"
-healthBtn.TextColor3 = Color3.new(1, 1, 1)
-healthBtn.Font = Enum.Font.GothamBold
-healthBtn.Position = UDim2.fromOffset(0, 160)
-healthBtn.Visible = false
-corner(healthBtn, UDim.new(0, 6))
-
-local distBtn = Instance.new("TextButton", visualsPage)
-distBtn.Size = UDim2.new(1, 0, 0, 35)
-distBtn.BackgroundColor3 = OFF
-distBtn.Text = "DIST: ON"
-distBtn.TextColor3 = Color3.new(1, 1, 1)
-distBtn.Font = Enum.Font.GothamBold
-distBtn.Position = UDim2.fromOffset(0, 200)
-distBtn.Visible = false
-corner(distBtn, UDim.new(0, 6))
-
-chamsBtn.Activated:Connect(function()
-	showChams = not showChams
-	chamsBtn.Text = showChams and "CHAMS: ON" or "CHAMS: OFF"
-	for p, d in pairs(activeEspData) do
-		if d.Highlight then d.Highlight.Enabled = showChams end
-	end
-end)
-
-nameBtn.Activated:Connect(function()
-	showName = not showName
-	nameBtn.Text = showName and "NAME: ON" or "NAME: OFF"
-	for p, d in pairs(activeEspData) do
-		if d.NameLabel then d.NameLabel.Visible = showName end
-	end
-end)
-
-healthBtn.Activated:Connect(function()
-	showHealth = not showHealth
-	healthBtn.Text = showHealth and "HEALTH: ON" or "HEALTH: OFF"
-	for p, d in pairs(activeEspData) do
-		if d.HealthLabel then d.HealthLabel.Visible = showHealth end
-	end
-end)
-
-distBtn.Activated:Connect(function()
-	showDist = not showDist
-	distBtn.Text = showDist and "DIST: ON" or "DIST: OFF"
-	for p, d in pairs(activeEspData) do
-		if d.DistLabel then d.DistLabel.Visible = showDist end
-	end
-end)
-
-local function createESP(p)
-	if p == LP or not p.Character then return end
-	local char = p.Character
-	local head = char:FindFirstChild("Head")
-	local hum = char:FindFirstChildOfClass("Humanoid")
-	if not head or not hum then return end
-	
-	local hl = Instance.new("Highlight", char)
-	hl.FillColor = espColor hl.OutlineColor = espColor hl.FillTransparency = 0.6
-	hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-	hl.Enabled = showChams
-	
-	local bb = Instance.new("BillboardGui", char)
-	bb.Adornee = head bb.Size = UDim2.new(0, 200, 0, 80) bb.StudsOffset = Vector3.new(0, 3, 0) bb.AlwaysOnTop = true
-	
-	local name = Instance.new("TextLabel", bb)
-	name.Size = UDim2.new(1, 0, 0, 20) name.BackgroundTransparency = 1 name.Text = p.Name name.TextColor3 = espColor
-	name.TextStrokeTransparency = 0 name.Font = Enum.Font.GothamBold name.TextSize = 14
-	name.Visible = showName
-	
-	local dist = Instance.new("TextLabel", bb)
-	dist.Size = UDim2.new(1, 0, 0, 16) dist.Position = UDim2.new(0, 0, 0, 20) dist.BackgroundTransparency = 1
-	dist.TextColor3 = Color3.new(1, 1, 1) dist.TextStrokeTransparency = 0 dist.Font = Enum.Font.Gotham dist.TextSize = 12
-	dist.Visible = showDist
-	
-	local hpText = Instance.new("TextLabel", bb)
-	hpText.Size = UDim2.new(1, 0, 0, 16) hpText.Position = UDim2.new(0, 0, 0, 36) hpText.BackgroundTransparency = 1
-	hpText.TextColor3 = Color3.fromRGB(0, 255, 0) hpText.TextStrokeTransparency = 0 hpText.Font = Enum.Font.Gotham hpText.TextSize = 12
-	hpText.Text = "HP: 100"
-	hpText.Visible = showHealth
-	
-	activeEspData[p] = {Highlight = hl, Billboard = bb, NameLabel = name, DistLabel = dist, HealthLabel = hpText, Char = char}
-end
-
-local function removeESP(p)
-	local d = activeEspData[p]
-	if d then
-		if d.Highlight then d.Highlight:Destroy() end
-		if d.Billboard then d.Billboard:Destroy() end
-		activeEspData[p] = nil
-	end
-end
-
-espBtn.Activated:Connect(function()
-	espActive = not espActive
-	espBtn.Text = espActive and "ESP: ON" or "ESP: OFF"
-	colorBtn.Visible = espActive
-	chamsBtn.Visible = espActive
-	nameBtn.Visible = espActive
-	healthBtn.Visible = espActive
-	distBtn.Visible = espActive
-	
-	if espActive then
-		for _, p in ipairs(Players:GetPlayers()) do createESP(p) end
-	else
-		for p, _ in pairs(activeEspData) do removeESP(p) end
-	end
-end)
-
-RunService.RenderStepped:Connect(function()
-	if not espActive then return end
-	for p, d in pairs(activeEspData) do
-		if d.Char and d.Char:FindFirstChild("HumanoidRootPart") and d.Char:FindFirstChildOfClass("Humanoid") then
-			local root = d.Char.HumanoidRootPart
-			local hum = d.Char:FindFirstChildOfClass("Humanoid")
-			local dist = (root.Position - workspace.CurrentCamera.CFrame.Position).Magnitude
-			d.DistLabel.Text = string.format("[%d]", math.floor(dist))
-			
-			if showHealth then
-				local hp = math.floor(hum.Health)
-				d.HealthLabel.Text = "HP: " .. hp
-				if hum.Health / hum.MaxHealth > 0.6 then
-					d.HealthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-				elseif hum.Health / hum.MaxHealth > 0.3 then
-					d.HealthLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
-				else
-					d.HealthLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-				end
-			end
-		end
-	end
-end)
-
-print("Универсал: Часть 1 загружена.")
--- Универсал | Часть 2 (Combat + Movement с Крутилкой + Players)
+end)-- Универсал | Часть 2 (ESP + Combat)
 local function addToggle(page, text, callback)
 	local btn = Instance.new("TextButton", page)
 	btn.Size = UDim2.new(1, 0, 0, 35)
@@ -388,29 +190,10 @@ local function addSlider(page, text, min, max, default, callback)
 	row.Size = UDim2.new(1, 0, 0, 45)
 	row.BackgroundColor3 = Color3.fromRGB(30, 45, 70)
 	corner(row, UDim.new(0, 6))
-	local lbl = Instance.new("TextLabel", row)
-	lbl.Size = UDim2.new(1, -20, 0, 20)
-	lbl.Position = UDim2.fromOffset(10, 2)
-	lbl.BackgroundTransparency = 1
-	lbl.Text = text .. ": " .. default
-	lbl.TextColor3 = Color3.new(1, 1, 1)
-	lbl.Font = Enum.Font.GothamBold
-	lbl.TextSize = 12
-	lbl.TextXAlignment = Enum.TextXAlignment.Left
-	local track = Instance.new("Frame", row)
-	track.Size = UDim2.new(1, -20, 0, 6)
-	track.Position = UDim2.fromOffset(10, 28)
-	track.BackgroundColor3 = Color3.fromRGB(70, 85, 120)
-	corner(track, UDim.new(1, 0))
-	local fill = Instance.new("Frame", track)
-	fill.Size = UDim2.new((default-min)/(max-min), 0, 1, 0)
-	fill.BackgroundColor3 = ACCENT
-	corner(fill, UDim.new(1, 0))
-	local hit = Instance.new("TextButton", row)
-	hit.Size = UDim2.new(1, 0, 0, 20)
-	hit.Position = UDim2.fromOffset(0, 20)
-	hit.BackgroundTransparency = 1
-	hit.Text = ""
+	local lbl = Instance.new("TextLabel", row) lbl.Size = UDim2.new(1, -20, 0, 20) lbl.Position = UDim2.fromOffset(10, 2) lbl.BackgroundTransparency = 1 lbl.Text = text .. ": " .. default lbl.TextColor3 = Color3.new(1, 1, 1) lbl.Font = Enum.Font.GothamBold lbl.TextSize = 12 lbl.TextXAlignment = Enum.TextXAlignment.Left
+	local track = Instance.new("Frame", row) track.Size = UDim2.new(1, -20, 0, 6) track.Position = UDim2.fromOffset(10, 28) track.BackgroundColor3 = Color3.fromRGB(70, 85, 120) corner(track, UDim.new(1, 0))
+	local fill = Instance.new("Frame", track) fill.Size = UDim2.new((default-min)/(max-min), 0, 1, 0) fill.BackgroundColor3 = ACCENT corner(fill, UDim.new(1, 0))
+	local hit = Instance.new("TextButton", row) hit.Size = UDim2.new(1, 0, 0, 20) hit.Position = UDim2.fromOffset(0, 20) hit.BackgroundTransparency = 1 hit.Text = ""
 	local sliding = false
 	local function update(i)
 		local rel = math.clamp((i.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
@@ -424,22 +207,224 @@ local function addSlider(page, text, min, max, default, callback)
 	UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then sliding = false end end)
 end
 
--- COMBAT
-local combatLayout = Instance.new("UIListLayout", combatPage)
-combatLayout.Padding = UDim.new(0, 8)
-combatLayout.SortOrder = Enum.SortOrder.LayoutOrder
-local cLbl = Instance.new("TextLabel", combatPage)
-cLbl.Size = UDim2.new(1, 0, 0, 40)
-cLbl.BackgroundTransparency = 1
-cLbl.Text = "В разработке..."
-cLbl.TextColor3 = Color3.fromRGB(150, 150, 150)
-cLbl.Font = Enum.Font.GothamBold
+-- ================= VISUALS (ESP) =================
+local espActive = false
+local activeEspData = {}
+local espColor = Color3.fromRGB(110, 190, 255)
+local showChams = true
+local showName = true
+local showHealth = true
+local showDist = true
 
--- MOVEMENT
-local moveLayout = Instance.new("UIListLayout", movementPage)
-moveLayout.Padding = UDim.new(0, 8)
-moveLayout.SortOrder = Enum.SortOrder.LayoutOrder
+local espBtn = Instance.new("TextButton", visualsPage) espBtn.Size = UDim2.new(1, 0, 0, 35) espBtn.BackgroundColor3 = OFF espBtn.Text = "ESP: OFF" espBtn.TextColor3 = Color3.new(1, 1, 1) espBtn.Font = Enum.Font.GothamBold corner(espBtn, UDim.new(0, 6))
+local colorBtn = Instance.new("TextButton", visualsPage) colorBtn.Size = UDim2.new(1, 0, 0, 35) colorBtn.BackgroundColor3 = OFF colorBtn.Text = "Color: Blue" colorBtn.TextColor3 = Color3.new(1, 1, 1) colorBtn.Font = Enum.Font.GothamBold colorBtn.Visible = false corner(colorBtn, UDim.new(0, 6))
+local chamsBtn = Instance.new("TextButton", visualsPage) chamsBtn.Size = UDim2.new(1, 0, 0, 35) chamsBtn.BackgroundColor3 = OFF chamsBtn.Text = "CHAMS: ON" chamsBtn.TextColor3 = Color3.new(1, 1, 1) chamsBtn.Font = Enum.Font.GothamBold chamsBtn.Visible = false corner(chamsBtn, UDim.new(0, 6))
+local nameBtn = Instance.new("TextButton", visualsPage) nameBtn.Size = UDim2.new(1, 0, 0, 35) nameBtn.BackgroundColor3 = OFF nameBtn.Text = "NAME: ON" nameBtn.TextColor3 = Color3.new(1, 1, 1) nameBtn.Font = Enum.Font.GothamBold nameBtn.Visible = false corner(nameBtn, UDim.new(0, 6))
+local healthBtn = Instance.new("TextButton", visualsPage) healthBtn.Size = UDim2.new(1, 0, 0, 35) healthBtn.BackgroundColor3 = OFF healthBtn.Text = "HEALTH: ON" healthBtn.TextColor3 = Color3.new(1, 1, 1) healthBtn.Font = Enum.Font.GothamBold healthBtn.Visible = false corner(healthBtn, UDim.new(0, 6))
+local distBtn = Instance.new("TextButton", visualsPage) distBtn.Size = UDim2.new(1, 0, 0, 35) distBtn.BackgroundColor3 = OFF distBtn.Text = "DIST: ON" distBtn.TextColor3 = Color3.new(1, 1, 1) distBtn.Font = Enum.Font.GothamBold distBtn.Visible = false corner(distBtn, UDim.new(0, 6))
 
+local function createESP(p)
+	if p == LP or not p.Character then return end
+	local char = p.Character
+	local head = char:FindFirstChild("Head")
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not head or not hum then return end
+	local hl = Instance.new("Highlight", char)
+	hl.FillColor = espColor hl.OutlineColor = espColor hl.FillTransparency = 0.6
+	hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	hl.Enabled = showChams
+	local bb = Instance.new("BillboardGui", char)
+	bb.Adornee = head bb.Size = UDim2.new(0, 200, 0, 80) bb.StudsOffset = Vector3.new(0, 3, 0) bb.AlwaysOnTop = true
+	local name = Instance.new("TextLabel", bb) name.Size = UDim2.new(1, 0, 0, 20) name.BackgroundTransparency = 1 name.Text = p.Name name.TextColor3 = espColor name.TextStrokeTransparency = 0 name.Font = Enum.Font.GothamBold name.TextSize = 14 name.Visible = showName
+	local dist = Instance.new("TextLabel", bb) dist.Size = UDim2.new(1, 0, 0, 16) dist.Position = UDim2.new(0, 0, 0, 20) dist.BackgroundTransparency = 1 dist.TextColor3 = Color3.new(1, 1, 1) dist.TextStrokeTransparency = 0 dist.Font = Enum.Font.Gotham dist.TextSize = 12 dist.Visible = showDist
+	local hpText = Instance.new("TextLabel", bb) hpText.Size = UDim2.new(1, 0, 0, 16) hpText.Position = UDim2.new(0, 0, 0, 36) hpText.BackgroundTransparency = 1 hpText.TextColor3 = Color3.fromRGB(0, 255, 0) hpText.TextStrokeTransparency = 0 hpText.Font = Enum.Font.Gotham hpText.TextSize = 12 hpText.Text = "HP: 100" hpText.Visible = showHealth
+	activeEspData[p] = {Highlight = hl, Billboard = bb, NameLabel = name, DistLabel = dist, HealthLabel = hpText, Char = char}
+end
+
+local function removeESP(p)
+	local d = activeEspData[p]
+	if d then
+		if d.Highlight then d.Highlight:Destroy() end
+		if d.Billboard then d.Billboard:Destroy() end
+		activeEspData[p] = nil
+	end
+end
+
+espBtn.Activated:Connect(function()
+	espActive = not espActive
+	espBtn.Text = espActive and "ESP: ON" or "ESP: OFF"
+	colorBtn.Visible = espActive; chamsBtn.Visible = espActive; nameBtn.Visible = espActive; healthBtn.Visible = espActive; distBtn.Visible = espActive
+	if espActive then for _, p in ipairs(Players:GetPlayers()) do createESP(p) end else for p, _ in pairs(activeEspData) do removeESP(p) end end
+end)
+colorBtn.Activated:Connect(function() espColor = espColor == Color3.fromRGB(110, 190, 255) and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(110, 190, 255) colorBtn.Text = espColor == Color3.fromRGB(110, 190, 255) and "Color: Blue" or "Color: Red" for p, d in pairs(activeEspData) do d.Highlight.FillColor = espColor; d.Highlight.OutlineColor = espColor; d.NameLabel.TextColor3 = espColor end end)
+chamsBtn.Activated:Connect(function() showChams = not showChams chamsBtn.Text = showChams and "CHAMS: ON" or "CHAMS: OFF" for p, d in pairs(activeEspData) do d.Highlight.Enabled = showChams end end)
+nameBtn.Activated:Connect(function() showName = not showName nameBtn.Text = showName and "NAME: ON" or "NAME: OFF" for p, d in pairs(activeEspData) do d.NameLabel.Visible = showName end end)
+healthBtn.Activated:Connect(function() showHealth = not showHealth healthBtn.Text = showHealth and "HEALTH: ON" or "HEALTH: OFF" for p, d in pairs(activeEspData) do d.HealthLabel.Visible = showHealth end end)
+distBtn.Activated:Connect(function() showDist = not showDist distBtn.Text = showDist and "DIST: ON" or "DIST: OFF" for p, d in pairs(activeEspData) do d.DistLabel.Visible = showDist end end)
+
+RunService.RenderStepped:Connect(function()
+	if not espActive then return end
+	for p, d in pairs(activeEspData) do
+		if d.Char and d.Char:FindFirstChild("HumanoidRootPart") and d.Char:FindFirstChildOfClass("Humanoid") then
+			local root = d.Char.HumanoidRootPart
+			local hum = d.Char:FindFirstChildOfClass("Humanoid")
+			local dist = (root.Position - Camera.CFrame.Position).Magnitude
+			d.DistLabel.Text = string.format("[%d]", math.floor(dist))
+			if showHealth then
+				local hp = math.floor(hum.Health)
+				d.HealthLabel.Text = "HP: " .. hp
+				if hum.Health / hum.MaxHealth > 0.6 then d.HealthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+				elseif hum.Health / hum.MaxHealth > 0.3 then d.HealthLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+				else d.HealthLabel.TextColor3 = Color3.fromRGB(255, 0, 0) end
+			end
+		end
+	end
+end)
+
+-- ================= COMBAT (Aimbot + Hitbox) =================
+local aimbotActive = false
+local aimbotFov = 100
+local aimbotConn = nil
+
+local aimbotToggle = Instance.new("TextButton", combatPage) aimbotToggle.Size = UDim2.new(1, 0, 0, 35) aimbotToggle.BackgroundColor3 = OFF aimbotToggle.Text = "Aimbot: OFF" aimbotToggle.TextColor3 = Color3.new(1, 1, 1) aimbotToggle.Font = Enum.Font.GothamBold corner(aimbotToggle, UDim.new(0, 6))
+local aimbotSlider = Instance.new("Frame", combatPage) aimbotSlider.Size = UDim2.new(1, 0, 0, 45) aimbotSlider.BackgroundColor3 = Color3.fromRGB(30, 45, 70) corner(aimbotSlider, UDim.new(0, 6))
+local aimLabel = Instance.new("TextLabel", aimbotSlider) aimLabel.Size = UDim2.new(1, -20, 0, 20) aimLabel.Position = UDim2.fromOffset(10, 2) aimLabel.BackgroundTransparency = 1 aimLabel.Text = "Aimbot FOV: 100" aimLabel.TextColor3 = Color3.new(1, 1, 1) aimLabel.Font = Enum.Font.GothamBold aimLabel.TextSize = 12 aimLabel.TextXAlignment = Enum.TextXAlignment.Left
+local aimTrack = Instance.new("Frame", aimbotSlider) aimTrack.Size = UDim2.new(1, -20, 0, 6) aimTrack.Position = UDim2.fromOffset(10, 28) aimTrack.BackgroundColor3 = Color3.fromRGB(70, 85, 120) corner(aimTrack, UDim.new(1, 0))
+local aimFill = Instance.new("Frame", aimTrack) aimFill.Size = UDim2.new(0.2, 0, 1, 0) aimFill.BackgroundColor3 = ACCENT corner(aimFill, UDim.new(1, 0))
+local aimHit = Instance.new("TextButton", aimbotSlider) aimHit.Size = UDim2.new(1, 0, 0, 20) aimHit.Position = UDim2.fromOffset(0, 20) aimHit.BackgroundTransparency = 1 aimHit.Text = ""
+local aimSliding = false
+aimHit.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then aimSliding = true local rel = math.clamp((i.Position.X - aimTrack.AbsolutePosition.X) / aimTrack.AbsoluteSize.X, 0, 1) aimbotFov = math.floor(10 + rel * 490) aimLabel.Text = "Aimbot FOV: " .. aimbotFov aimFill.Size = UDim2.new(rel, 0, 1, 0) end end)
+UIS.InputChanged:Connect(function(i) if aimSliding and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then local rel = math.clamp((i.Position.X - aimTrack.AbsolutePosition.X) / aimTrack.AbsoluteSize.X, 0, 1) aimbotFov = math.floor(10 + rel * 490) aimLabel.Text = "Aimbot FOV: " .. aimbotFov aimFill.Size = UDim2.new(rel, 0, 1, 0) end end)
+UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then aimSliding = false end end)
+
+local fovGui = Instance.new("ScreenGui", PG) fovGui.Name = "FovGui" fovGui.ResetOnSpawn = false fovGui.IgnoreGuiInset = true
+local fovCircle = Instance.new("ImageLabel", fovGui) fovCircle.Size = UDim2.fromOffset(100, 100) fovCircle.Position = UDim2.fromScale(0.5, 0.5) fovCircle.AnchorPoint = Vector2.new(0.5, 0.5) fovCircle.BackgroundTransparency = 1 fovCircle.Image = "rbxassetid://1664904704" fovCircle.ImageColor3 = ACCENT fovCircle.ImageTransparency = 0.5 fovCircle.Visible = false
+
+aimbotToggle.Activated:Connect(function()
+    aimbotActive = not aimbotActive
+    aimbotToggle.Text = aimbotActive and "Aimbot: ON" or "Aimbot: OFF"
+    fovCircle.Visible = aimbotActive
+    if aimbotActive then
+        aimbotConn = RunService.RenderStepped:Connect(function()
+            local target = nil
+            local shortestDist = aimbotFov
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= LP and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
+                    local screenPos, onScreen = Camera:WorldToViewportPoint(p.Character.HumanoidRootPart.Position)
+                    if onScreen then
+                        local distFromCenter = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)).Magnitude
+                        if distFromCenter < shortestDist then shortestDist = distFromCenter target = p.Character.Head end
+                    end
+                end
+            end
+            if target then Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position) end
+        end)
+    else
+        if aimbotConn then aimbotConn:Disconnect() aimbotConn = nil end
+    end
+end)
+RunService.RenderStepped:Connect(function() if fovCircle.Visible then fovCircle.Size = UDim2.fromOffset(aimbotFov * 2, aimbotFov * 2) end end)
+
+-- HITBOX
+local hitboxActive = false
+local hitboxSize = 5
+local hitboxTransparency = 0.5
+local activeHitboxes = {}
+
+local hitboxToggle = Instance.new("TextButton", combatPage) hitboxToggle.Size = UDim2.new(1, 0, 0, 35) hitboxToggle.BackgroundColor3 = OFF hitboxToggle.Text = "Hitbox Expander: OFF" hitboxToggle.TextColor3 = Color3.new(1, 1, 1) hitboxToggle.Font = Enum.Font.GothamBold corner(hitboxToggle, UDim.new(0, 6))
+local hitboxSizeSlider = Instance.new("Frame", combatPage) hitboxSizeSlider.Size = UDim2.new(1, 0, 0, 45) hitboxSizeSlider.BackgroundColor3 = Color3.fromRGB(30, 45, 70) corner(hitboxSizeSlider, UDim.new(0, 6))
+local hSizeLabel = Instance.new("TextLabel", hitboxSizeSlider) hSizeLabel.Size = UDim2.new(1, -20, 0, 20) hSizeLabel.Position = UDim2.fromOffset(10, 2) hSizeLabel.BackgroundTransparency = 1 hSizeLabel.Text = "Hitbox Size: 5" hSizeLabel.TextColor3 = Color3.new(1, 1, 1) hSizeLabel.Font = Enum.Font.GothamBold hSizeLabel.TextSize = 12 hSizeLabel.TextXAlignment = Enum.TextXAlignment.Left
+local hSizeTrack = Instance.new("Frame", hitboxSizeSlider) hSizeTrack.Size = UDim2.new(1, -20, 0, 6) hSizeTrack.Position = UDim2.fromOffset(10, 28) hSizeTrack.BackgroundColor3 = Color3.fromRGB(70, 85, 120) corner(hSizeTrack, UDim.new(1, 0))
+local hSizeFill = Instance.new("Frame", hSizeTrack) hSizeFill.Size = UDim2.new(0.15, 0, 1, 0) hSizeFill.BackgroundColor3 = ACCENT corner(hSizeFill, UDim.new(1, 0))
+local hSizeHit = Instance.new("TextButton", hitboxSizeSlider) hSizeHit.Size = UDim2.new(1, 0, 0, 20) hSizeHit.Position = UDim2.fromOffset(0, 20) hSizeHit.BackgroundTransparency = 1 hSizeHit.Text = ""
+local hSizeSliding = false
+hSizeHit.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then hSizeSliding = true local rel = math.clamp((i.Position.X - hSizeTrack.AbsolutePosition.X) / hSizeTrack.AbsoluteSize.X, 0, 1) hitboxSize = math.floor(2 + rel * 18) hSizeLabel.Text = "Hitbox Size: " .. hitboxSize hSizeFill.Size = UDim2.new(rel, 0, 1, 0) end end)
+UIS.InputChanged:Connect(function(i) if hSizeSliding and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then local rel = math.clamp((i.Position.X - hSizeTrack.AbsolutePosition.X) / hSizeTrack.AbsoluteSize.X, 0, 1) hitboxSize = math.floor(2 + rel * 18) hSizeLabel.Text = "Hitbox Size: " .. hitboxSize hSizeFill.Size = UDim2.new(rel, 0, 1, 0) end end)
+UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then hSizeSliding = false end end)
+
+local hitboxTransSlider = Instance.new("Frame", combatPage) hitboxTransSlider.Size = UDim2.new(1, 0, 0, 45) hitboxTransSlider.BackgroundColor3 = Color3.fromRGB(30, 45, 70) corner(hitboxTransSlider, UDim.new(0, 6))
+local hTransLabel = Instance.new("TextLabel", hitboxTransSlider) hTransLabel.Size = UDim2.new(1, -20, 0, 20) hTransLabel.Position = UDim2.fromOffset(10, 2) hTransLabel.BackgroundTransparency = 1 hTransLabel.Text = "Hitbox Opacity: 50" hTransLabel.TextColor3 = Color3.new(1, 1, 1) hTransLabel.Font = Enum.Font.GothamBold hTransLabel.TextSize = 12 hTransLabel.TextXAlignment = Enum.TextXAlignment.Left
+local hTransTrack = Instance.new("Frame", hitboxTransSlider) hTransTrack.Size = UDim2.new(1, -20, 0, 6) hTransTrack.Position = UDim2.fromOffset(10, 28) hTransTrack.BackgroundColor3 = Color3.fromRGB(70, 85, 120) corner(hTransTrack, UDim.new(1, 0))
+local hTransFill = Instance.new("Frame", hTransTrack) hTransFill.Size = UDim2.new(0.5, 0, 1, 0) hTransFill.BackgroundColor3 = ACCENT corner(hTransFill, UDim.new(1, 0))
+local hTransHit = Instance.new("TextButton", hitboxTransSlider) hTransHit.Size = UDim2.new(1, 0, 0, 20) hTransHit.Position = UDim2.fromOffset(0, 20) hTransHit.BackgroundTransparency = 1 hTransHit.Text = ""
+local hTransSliding = false
+hTransHit.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then hTransSliding = true local rel = math.clamp((i.Position.X - hTransTrack.AbsolutePosition.X) / hTransTrack.AbsoluteSize.X, 0, 1) hitboxTransparency = rel hTransLabel.Text = "Hitbox Opacity: " .. math.floor(rel*100) hTransFill.Size = UDim2.new(rel, 0, 1, 0) end end)
+UIS.InputChanged:Connect(function(i) if hTransSliding and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then local rel = math.clamp((i.Position.X - hTransTrack.AbsolutePosition.X) / hTransTrack.AbsoluteSize.X, 0, 1) hitboxTransparency = rel hTransLabel.Text = "Hitbox Opacity: " .. math.floor(rel*100) hTransFill.Size = UDim2.new(rel, 0, 1, 0) end end)
+UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then hTransSliding = false end end)
+
+hitboxToggle.Activated:Connect(function()
+    hitboxActive = not hitboxActive
+    hitboxToggle.Text = hitboxActive and "Hitbox Expander: ON" or "Hitbox Expander: OFF"
+    if hitboxActive then
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LP and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local box = Instance.new("Part", p.Character) box.Name = "ExpanderBox" box.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize) box.Transparency = hitboxTransparency box.Color = ACCENT box.Material = Enum.Material.Neon box.CanCollide = false box.Massless = true
+                local weld = Instance.new("Weld", box) weld.Part0 = box weld.Part1 = p.Character.HumanoidRootPart activeHitboxes[p] = box
+            end
+        end
+    else
+        for _, box in pairs(activeHitboxes) do if box then box:Destroy() end end
+        activeHitboxes = {}
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if hitboxActive then
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LP and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                if not activeHitboxes[p] or not activeHitboxes[p].Parent then
+                    local box = Instance.new("Part", p.Character) box.Name = "ExpanderBox" box.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize) box.Transparency = hitboxTransparency box.Color = ACCENT box.Material = Enum.Material.Neon box.CanCollide = false box.Massless = true
+                    local weld = Instance.new("Weld", box) weld.Part0 = box weld.Part1 = p.Character.HumanoidRootPart activeHitboxes[p] = box
+                else
+                    activeHitboxes[p].Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+                    activeHitboxes[p].Transparency = hitboxTransparency
+                end
+            end
+        end
+    end
+end)
+
+print("Универсал: Часть 2 загружена.")
+-- Универсал | Часть 3 (Movement + Players)
+local function addToggle(page, text, callback)
+	local btn = Instance.new("TextButton", page)
+	btn.Size = UDim2.new(1, 0, 0, 35)
+	btn.BackgroundColor3 = Color3.fromRGB(30, 45, 70)
+	btn.Text = text .. ": OFF"
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Font = Enum.Font.GothamBold
+	corner(btn, UDim.new(0, 6))
+	local state = false
+	btn.Activated:Connect(function()
+		state = not state
+		btn.Text = text .. (state and ": ON" or ": OFF")
+		if callback then task.spawn(callback, state) end
+	end)
+end
+
+local function addSlider(page, text, min, max, default, callback)
+	local row = Instance.new("Frame", page)
+	row.Size = UDim2.new(1, 0, 0, 45)
+	row.BackgroundColor3 = Color3.fromRGB(30, 45, 70)
+	corner(row, UDim.new(0, 6))
+	local lbl = Instance.new("TextLabel", row) lbl.Size = UDim2.new(1, -20, 0, 20) lbl.Position = UDim2.fromOffset(10, 2) lbl.BackgroundTransparency = 1 lbl.Text = text .. ": " .. default lbl.TextColor3 = Color3.new(1, 1, 1) lbl.Font = Enum.Font.GothamBold lbl.TextSize = 12 lbl.TextXAlignment = Enum.TextXAlignment.Left
+	local track = Instance.new("Frame", row) track.Size = UDim2.new(1, -20, 0, 6) track.Position = UDim2.fromOffset(10, 28) track.BackgroundColor3 = Color3.fromRGB(70, 85, 120) corner(track, UDim.new(1, 0))
+	local fill = Instance.new("Frame", track) fill.Size = UDim2.new((default-min)/(max-min), 0, 1, 0) fill.BackgroundColor3 = ACCENT corner(fill, UDim.new(1, 0))
+	local hit = Instance.new("TextButton", row) hit.Size = UDim2.new(1, 0, 0, 20) hit.Position = UDim2.fromOffset(0, 20) hit.BackgroundTransparency = 1 hit.Text = ""
+	local sliding = false
+	local function update(i)
+		local rel = math.clamp((i.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+		local val = math.floor(min + rel * (max - min))
+		fill.Size = UDim2.new(rel, 0, 1, 0)
+		lbl.Text = text .. ": " .. val
+		if callback then task.spawn(callback, val) end
+	end
+	hit.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then sliding = true update(i) end end)
+	UIS.InputChanged:Connect(function(i) if sliding and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then update(i) end end)
+	UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then sliding = false end end)
+end
+
+-- ================= MOVEMENT =================
 local flying = false
 local flySpeed = 50
 addToggle(movementPage, "Fly", function(on)
@@ -467,7 +452,7 @@ addToggle(movementPage, "Fly", function(on)
 		task.spawn(function()
 			while flying and char.Parent do
 				RunService.RenderStepped:Wait()
-				local cam = workspace.CurrentCamera.CFrame
+				local cam = Camera.CFrame
 				bg.CFrame = CFrame.new(root.Position, root.Position + cam.LookVector)
 				local moveDir = hum.MoveDirection
 				local finalDir = Vector3.zero
@@ -526,23 +511,19 @@ addSlider(movementPage, "Сила прыжка", 50, 200, 50, function(v)
 	end
 end)
 
--- КРУТИЛКА (SPIN BOT)
 local spinning = false
 local spinSpeed = 50
 local spinConn = nil
-
 addToggle(movementPage, "Крутилка", function(on)
     spinning = on
     local char = LP.Character
     if not char then return end
     local root = char:FindFirstChild("HumanoidRootPart")
     if not root then return end
-    
     if spinning then
         if spinConn then spinConn:Disconnect() end
         spinConn = RunService.Heartbeat:Connect(function()
             if spinning and char and char.Parent and root then
-                -- Вращаем только CFrame (не ломает ходьбу)
                 root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
             end
         end)
@@ -552,11 +533,7 @@ addToggle(movementPage, "Крутилка", function(on)
 end)
 addSlider(movementPage, "Скорость крутилки", 10, 200, 50, function(v) spinSpeed = v end)
 
--- PLAYERS
-local playersLayout = Instance.new("UIListLayout", playersPage)
-playersLayout.Padding = UDim.new(0, 5)
-playersLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
+-- ================= PLAYERS =================
 local selectedPlayer = nil
 local playerList = Instance.new("ScrollingFrame", playersPage)
 playerList.Size = UDim2.new(1, 0, 0, 120)
@@ -599,4 +576,4 @@ tpBtn.Activated:Connect(function()
 	end
 end)
 
-print("Универсал: Часть 2 загружена. Крутилка в Movement.")
+print("Универсал: Скрипт полностью загружен!")
